@@ -65,14 +65,14 @@ extension HomeViewController {
         
         let leftLargeTitleLabel = UILabel()
         leftLargeTitleLabel.text = "홈"
-        leftLargeTitleLabel.font = UIFont.boldSystemFont(ofSize: 30)
-        leftLargeTitleLabel.textColor = .black
+        leftLargeTitleLabel.font = UIFont.boldSystemFont(ofSize: 25)
         
         let leftTitle = UIBarButtonItem(customView: leftLargeTitleLabel)
         self.navigationItem.leftBarButtonItem = leftTitle
         
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "magnifyingglass"), style: .plain, target: nil, action: nil)
-        self.view.backgroundColor = .systemYellow
+        
+        self.view.backgroundColor = .systemGroupedBackground
         
         // 캘린더 뷰
         calendarView.snp.makeConstraints { make in

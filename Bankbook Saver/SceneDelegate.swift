@@ -28,9 +28,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let statisticViewController = UINavigationController(rootViewController: StatisticViewController())
         let mypageViewController = UINavigationController(rootViewController: MypageViewController())
         
-        homeViewController.tabBarItem = UITabBarItem(title: "홈", image: UIImage(systemName: "house"), tag: 0)
-        statisticViewController.tabBarItem = UITabBarItem(title: "통계", image: UIImage(systemName: "chart.pie"), tag: 1)
-        mypageViewController.tabBarItem = UITabBarItem(title: "마이페이지", image: UIImage(systemName: "person"), tag: 2)
+        homeViewController.tabBarItem = UITabBarItem(title: "홈", image: UIImage(systemName: "house.fill"), tag: 0)
+        statisticViewController.tabBarItem = UITabBarItem(title: "통계", image: UIImage(systemName: "chart.bar.xaxis"), tag: 1)
+        mypageViewController.tabBarItem = UITabBarItem(title: "마이페이지", image: UIImage(systemName: "person.fill"), tag: 2)
         
         tabBarController.viewControllers = [homeViewController, statisticViewController, mypageViewController]
         
