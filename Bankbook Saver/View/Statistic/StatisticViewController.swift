@@ -29,6 +29,7 @@ class StatisticViewController: UIViewController, View {
         tableView.register(StatsTableViewCell.self, forCellReuseIdentifier: "StatsTableViewCell")
         tableView.register(BarChartTableViewCell.self, forCellReuseIdentifier: "BarChartTableViewCell")
         tableView.register(PieChartTableViewCell.self, forCellReuseIdentifier: "PieChartTableViewCell")
+        tableView.register(InOutListTableViewCell.self, forCellReuseIdentifier: "InOutListTableViewCell")
         
         return tableView
     }()
@@ -50,6 +51,26 @@ class StatisticViewController: UIViewController, View {
         view.backgroundColor = .red
         return view
     }()
+    
+    // 임시 데이터
+    var inOutHeader: [String] = ["6일 월요일", "5일 일요일", "4일 토요일"]
+    var inOutCell: [[InOutCellInfo]] = [
+        [
+            .init(emoji: "\u{1F600}", money: "+10", detailUse: "매일 용돈 받기"),
+            .init(emoji: "\u{1F600}", money: "-3000", detailUse: "병원"),
+            .init(emoji: "\u{1F600}", money: "-7600", detailUse: "약국"),
+            .init(emoji: "\u{1F600}", money: "+10", detailUse: "매일 혜택 받기"),
+        ],
+        [
+            .init(emoji: "\u{1F600}", money: "-32000", detailUse: "쿠팡"),
+            .init(emoji: "\u{1F600}", money: "-36990", detailUse: "네이버페이"),
+            .init(emoji: "\u{1F600}", money: "+15000", detailUse: "입금"),
+        ],
+        [
+            .init(emoji: "\u{1F600}", money: "-4500", detailUse: "현대카드"),
+            .init(emoji: "\u{1F600}", money: "-52000", detailUse: "통신비")
+        ]
+    ]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -75,28 +96,6 @@ extension StatisticViewController {
         print("StatisticViewController - addSubViews() called")
         
         self.view.addSubview(statisticTableView)
-        
-//        self.view.addSubview(dateLabel)
-//        
-//        self.view.addSubview(leftMoveButton)
-//        
-//        self.view.addSubview(rightMoveButton)
-//        
-//        inComeStackView.addArrangedSubview(inComeMoneyLabel)
-//        inComeStackView.addArrangedSubview(inComeTextLabel)
-//        self.view.addSubview(inComeStackView)
-//        
-//        withdrawStackView.addArrangedSubview(withdrawMoneyLabel)
-//        withdrawStackView.addArrangedSubview(withdrawTextLabel)
-//        self.view.addSubview(withdrawStackView)
-        
-//        self.view.addSubview(littleMoneyTextLabel)
-        
-        self.view.addSubview(graphView)
-        
-        self.view.addSubview(categoryView)
-        
-        self.view.addSubview(inOutView)
     }
     
     func setLayout() {
@@ -116,78 +115,34 @@ extension StatisticViewController {
         statisticTableView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-        
-//        dateLabel.snp.makeConstraints { make in
-//            make.top.equalTo(self.view.safeAreaLayoutGuide).offset(30)
-//            make.leading.equalTo(self.view).offset(20)
-//        }
-//        
-//        leftMoveButton.snp.makeConstraints { make in
-//            make.centerY.equalTo(self.dateLabel.snp.centerY)
-//            make.trailing.equalTo(self.rightMoveButton.snp.leading).offset(-5)
-//        }
-//        
-//        rightMoveButton.snp.makeConstraints { make in
-//            make.centerY.equalTo(self.dateLabel.snp.centerY)
-//            make.trailing.equalTo(self.view).offset(-20)
-//        }
-//        
-//        inComeStackView.snp.makeConstraints { make in
-//            make.centerX.equalTo(self.view)
-//            make.top.equalTo(dateLabel.snp.bottom).offset(30)
-//            make.leading.equalTo(self.view).offset(20)
-//        }
-//        
-//        withdrawStackView.snp.makeConstraints { make in
-//            make.centerX.equalTo(self.view)
-//            make.top.equalTo(inComeStackView.snp.bottom).offset(30)
-//            make.leading.equalTo(self.view).offset(20)
-//        }
-//        
-//        littleMoneyTextLabel.snp.makeConstraints { make in
-//            make.top.equalTo(withdrawStackView.snp.bottom).offset(30)
-//            make.leading.equalTo(self.view).offset(20)
-//        }
-        
-//        graphView.snp.makeConstraints { make in
-//            make.size.equalTo(250)
-//            make.centerX.equalTo(self.view)
-//            make.top.equalTo(littleMoneyTextLabel.snp.bottom).offset(30)
-//        }
-//        
-//        categoryView.snp.makeConstraints { make in
-//            make.height.equalTo(30)
-//            make.top.equalTo(graphView.snp.bottom).offset(30)
-//            make.centerX.equalTo(self.view)
-//            make.leading.equalTo(self.view).offset(30)
-//        }
-//        
-//        // 수입/소비 테이블 뷰
-//        inOutView.snp.makeConstraints { make in
-//            make.top.equalTo(categoryView.snp.bottom).offset(50)
-//            make.leading.equalTo(self.view).offset(30)
-//            make.centerX.equalTo(self.view)
-//            make.bottom.equalTo(self.view.safeAreaLayoutGuide)
-//        }
-        
     }
 }
 
 extension StatisticViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 3
+        return 3 + inOutHeader.count
+    }
+    
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        switch section {
+        case 0, 1, 2:
+            return nil
+            
+        case 3...:
+            return inOutHeader[section-3]
+            
+        default:
+            return nil
+        }
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
-        case 0:
+        case 0, 1, 2:
             return 1
             
-        case 1:
-            return 1
-            
-        case 2:
-            return 1    // 수정필요
+        case 3...:
+            return inOutCell[section-3].count
             
         default:
             return 0
@@ -200,17 +155,28 @@ extension StatisticViewController: UITableViewDataSource {
             let cell = tableView.dequeueReusableCell(withIdentifier: "StatsTableViewCell", for: indexPath) as! StatsTableViewCell
             
             return cell
-        
+            
         case 1:
             let cell = tableView.dequeueReusableCell(withIdentifier: "BarChartTableViewCell", for: indexPath) as! BarChartTableViewCell
             
             return cell
-        
+            
         case 2:
             let cell = tableView.dequeueReusableCell(withIdentifier: "PieChartTableViewCell", for: indexPath) as! PieChartTableViewCell
             
             return cell
-        
+            
+        case 3...:
+            
+            let cell = tableView.dequeueReusableCell(withIdentifier: "InOutListTableViewCell", for: indexPath) as! InOutListTableViewCell
+            let section = indexPath.section - 3
+            
+            cell.emojiLabel.text = inOutCell[section][indexPath.row].emoji
+            cell.moneyLabel.text = inOutCell[section][indexPath.row].money
+            cell.detailUseLabel.text = inOutCell[section][indexPath.row].detailUse
+            
+            return cell
+            
         default:
             return UITableViewCell()
         }

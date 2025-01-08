@@ -6,9 +6,16 @@
 //
 
 import UIKit
+import SwiftUI
+import SnapKit
 
 class PieChartTableViewCell: UITableViewCell {
 
+    lazy var pieChart: UIView = {
+        let hostingController = UIHostingController(rootView: PieChart())
+        return hostingController.view
+    }()
+    
     lazy var pieChartView: UIView = {
         let view = UIView()
         view.backgroundColor = .systemRed
@@ -40,14 +47,20 @@ class PieChartTableViewCell: UITableViewCell {
     func addSubViews() {
         print("PieChartTableViewCell - addSubViews() called")
         
+        pieChartView.addSubview(pieChart)
+        
         self.contentView.addSubview(pieChartView)
     }
     
     func setLayout() {
         print("PieChartTableViewCell - setLayout() called")
         
+        pieChart.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
         pieChartView.snp.makeConstraints { make in
-            make.height.equalTo(200)
+            make.height.equalTo(250)
             make.centerX.equalTo(self.contentView.snp.centerX)
             make.top.equalTo(self.contentView.snp.top)
             make.leading.equalTo(20)
