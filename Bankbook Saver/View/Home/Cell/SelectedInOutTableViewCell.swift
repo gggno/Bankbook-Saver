@@ -46,7 +46,6 @@ class SelectedInOutTableViewCell: UITableViewCell {
     func setLayout() {
         print("SelectedInOutTableViewCell - setLayout() called")
         
-        // 캘린더 뷰
         selectedInOutView.snp.makeConstraints { make in
             make.height.equalTo(150)
             make.top.equalTo(self.contentView.snp.top)
