@@ -10,7 +10,7 @@ import UIKit
 
 struct MypageCellInfo {
     var title: String
-    var rightImage: UIImage? = nil
+    var rightImageName: String? = nil
     var rightImageText: String? = nil
     var rightText: String? = nil
 }
