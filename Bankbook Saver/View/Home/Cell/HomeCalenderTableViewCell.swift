@@ -63,7 +63,6 @@ class HomeCalenderTableViewCell: UITableViewCell {
     }
     
     func addSubViews() {
-        print("HomeCalenderTableViewCell - addSubViews() called")
         self.contentView.addSubview(weekStackView)
         
         for day in days {
@@ -79,7 +78,6 @@ class HomeCalenderTableViewCell: UITableViewCell {
     }
     
     func setLayout() {
-        print("HomeCalenderTableViewCell - setLayout() called")
         calendarCollectionView.backgroundColor = .green
 
         weekStackView.snp.makeConstraints { make in

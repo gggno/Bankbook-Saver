@@ -48,14 +48,12 @@ class HomeCalenderCollectionViewCell: UICollectionViewCell {
     }
     
     func addSubViews() {
-        print("HomeCalenderCollectionViewCell - addSubViews() called")
         self.contentView.addSubview(dateLabel)
         self.contentView.addSubview(inLabel)
         self.contentView.addSubview(outLabel)
     }
     
     func setLayout() {
-        print("HomeCalenderCollectionViewCell - setLayout() called")
         self.contentView.layer.borderWidth = 1
         self.contentView.layer.borderColor = UIColor.black.cgColor
         dateLabel.snp.makeConstraints { make in

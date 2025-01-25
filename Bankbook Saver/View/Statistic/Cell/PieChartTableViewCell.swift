@@ -45,16 +45,12 @@ class PieChartTableViewCell: UITableViewCell {
     }
     
     func addSubViews() {
-        print("PieChartTableViewCell - addSubViews() called")
-        
         pieChartView.addSubview(pieChart)
         
         self.contentView.addSubview(pieChartView)
     }
     
     func setLayout() {
-        print("PieChartTableViewCell - setLayout() called")
-        
         pieChart.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }

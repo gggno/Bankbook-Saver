@@ -8,6 +8,7 @@
 import UIKit
 import ReactorKit
 import SnapKit
+import RealmSwift
 
 class MypageViewController: UIViewController {
     
@@ -58,9 +59,23 @@ extension MypageViewController {
 extension MypageViewController: View {
     func bind(reactor: MypageReactor) {
         
+        // Action - trigger
+        // 로컬 디비에 저장된 데이터 가져오기
+        reactor.action.onNext(.fetchMypageDatasAction)
+        
         // 현재 버전 가져오기
         reactor.action.onNext(.getCurrentVersionAction)
         
+        
+        
+        // State - binding
+        reactor
+            .state
+            .observe(on: MainScheduler.instance)
+            .subscribe { _ in
+                self.myPageTableView.reloadData()
+            }
+            .disposed(by: disposeBag)
     }
 }
 
@@ -91,22 +106,33 @@ extension MypageViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        switch indexPath.section {
-        case 0:
-            if indexPath.row == 0 {
+        let sectionType = MypageSectionType(rawValue: indexPath.section)
+        let rowType = MypageRowType(rawValue: indexPath.row)
+        
+        switch sectionType {
+        case .general:
+            switch rowType {
+            case .wish:
                 let wishVC = WishListViewController()
                 self.navigationController?.pushViewController(wishVC, animated: true)
+            
+            case .displayMode:
+                let myPageReactor = self.reactor ?? MypageReactor()
+                
+                let darkLightReactor = DarkLightReactor(myPageReactor: myPageReactor)
+                let darkLightSettingVC = DarkLightSettingViewController(reactor: darkLightReactor)
 
-            } else if indexPath.row == 1 {
-                let darkLightSettingVC = DarkLightSettingViewController()
                 self.navigationController?.pushViewController(darkLightSettingVC, animated: true)
+            
+            default:
+                break
             }
             
-        case 1:
+        case .noti:
             let notiSettingVC = NotiSettingViewController()
             self.navigationController?.pushViewController(notiSettingVC, animated: true)
             
-        case 2:
+        case .saving:
             let accountVC = AccountViewController()
             self.navigationController?.pushViewController(accountVC, animated: true)
             

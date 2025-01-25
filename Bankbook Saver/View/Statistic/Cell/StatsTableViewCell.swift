@@ -98,8 +98,6 @@ class StatsTableViewCell: UITableViewCell {
     }
     
     func addSubViews() {
-        print("StatsTableViewCell - addSubViews() called")
-        
         self.contentView.addSubview(dateLabel)
         self.contentView.addSubview(leftMoveButton)
         self.contentView.addSubview(rightMoveButton)
@@ -114,8 +112,6 @@ class StatsTableViewCell: UITableViewCell {
     }
     
     func setLayout() {
-        print("StatsTableViewCell - setLayout() called")
-        
         dateLabel.snp.makeConstraints { make in
             make.top.equalTo(self.contentView.safeAreaLayoutGuide).offset(30)
             make.leading.equalTo(self.contentView).offset(20)

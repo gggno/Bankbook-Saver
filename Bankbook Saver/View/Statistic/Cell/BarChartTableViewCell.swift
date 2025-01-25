@@ -50,8 +50,6 @@ class BarChartTableViewCell: UITableViewCell {
     }
     
     func addSubViews() {
-        print("BarChartTableViewCell - addSubViews() called")
-        
         barChartView.addSubview(previousSpendLabel)
         
         barChartView.addSubview(barChart)
@@ -60,8 +58,6 @@ class BarChartTableViewCell: UITableViewCell {
     }
     
     func setLayout() {
-        print("BarChartTableViewCell - setLayout() called")
-        
         previousSpendLabel.snp.makeConstraints { make in
             make.top.equalTo(self.contentView.snp.top).offset(8)
             make.centerX.equalTo(self.contentView.snp.centerX)

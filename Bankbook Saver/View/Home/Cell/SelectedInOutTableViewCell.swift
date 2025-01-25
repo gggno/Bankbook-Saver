@@ -39,13 +39,10 @@ class SelectedInOutTableViewCell: UITableViewCell {
     }
     
     func addSubViews() {
-        print("SelectedInOutTableViewCell - addSubViews() called")
         self.contentView.addSubview(selectedInOutView)
     }
     
     func setLayout() {
-        print("SelectedInOutTableViewCell - setLayout() called")
-        
         selectedInOutView.snp.makeConstraints { make in
             make.height.equalTo(150)
             make.top.equalTo(self.contentView.snp.top)

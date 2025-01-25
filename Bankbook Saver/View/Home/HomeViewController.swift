@@ -28,7 +28,7 @@ class HomeViewController: UIViewController, View {
         tableView.estimatedRowHeight = 300
         
         tableView.register(HomeCalenderTableViewCell.self, forCellReuseIdentifier: "HomeCalenderTableViewCell")
-//        tableView.register(SelectedInOutTableViewCell.self, forCellReuseIdentifier: "SelectedInOutTableViewCell")
+        //        tableView.register(SelectedInOutTableViewCell.self, forCellReuseIdentifier: "SelectedInOutTableViewCell")
         tableView.register(InOutListTableViewCell.self, forCellReuseIdentifier: "InOutListTableViewCell")
         return tableView
     }()
@@ -134,21 +134,23 @@ extension HomeViewController: UITableViewDataSource {
             
         case 1...:
             return inOutCell[section-1].count
-        
+            
         default:
             return 0
         }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        switch indexPath.section {
-        case 0:
+        let sectionType = HomeSectionType(section: indexPath.section)
+        
+        switch sectionType {
+        case .homeCalendar:
             let cell = tableView.dequeueReusableCell(withIdentifier: "HomeCalenderTableViewCell", for: indexPath) as! HomeCalenderTableViewCell
             return cell
-        
-        case 1...:
-//            let cell = tableView.dequeueReusableCell(withIdentifier: "SelectedInOutTableViewCell", for: indexPath) as! SelectedInOutTableViewCell
-//            return cell
+            
+        case .homeInOutList:
+            //            let cell = tableView.dequeueReusableCell(withIdentifier: "SelectedInOutTableViewCell", for: indexPath) as! SelectedInOutTableViewCell
+            //            return cell
             let cell = tableView.dequeueReusableCell(withIdentifier: "InOutListTableViewCell", for: indexPath) as! InOutListTableViewCell
             let section = indexPath.section - 1
             
@@ -157,13 +159,8 @@ extension HomeViewController: UITableViewDataSource {
             cell.detailUseLabel.text = inOutCell[section][indexPath.row].detailUse
             
             return cell
-            
-        default:
-            return UITableViewCell()
         }
     }
-    
-    
 }
 
 extension HomeViewController: UITableViewDelegate {

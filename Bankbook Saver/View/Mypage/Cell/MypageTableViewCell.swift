@@ -55,7 +55,6 @@ class MypageTableViewCell: UITableViewCell {
     }
     
     func addSubViews() {
-        print("MypageTableViewCell - addSubViews() called")
         contentView.addSubview(title)
         contentView.addSubview(rightImageText)
         contentView.addSubview(rightImage)
@@ -63,8 +62,6 @@ class MypageTableViewCell: UITableViewCell {
     }
     
     func setLayout() {
-        print("MypageTableViewCell - setLayout() called")
-        
         title.snp.makeConstraints { make in
             make.centerY.equalToSuperview()
             make.leading.equalToSuperview().offset(20)

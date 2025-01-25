@@ -150,24 +150,25 @@ extension StatisticViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        switch indexPath.section {
-        case 0:
+        let sectionType = StatisticSectionType(section: indexPath.section)
+        
+        switch sectionType {
+        case .stats:
             let cell = tableView.dequeueReusableCell(withIdentifier: "StatsTableViewCell", for: indexPath) as! StatsTableViewCell
             
             return cell
             
-        case 1:
+        case .barChart:
             let cell = tableView.dequeueReusableCell(withIdentifier: "BarChartTableViewCell", for: indexPath) as! BarChartTableViewCell
             
             return cell
             
-        case 2:
+        case .pieChart:
             let cell = tableView.dequeueReusableCell(withIdentifier: "PieChartTableViewCell", for: indexPath) as! PieChartTableViewCell
             
             return cell
             
-        case 3...:
-            
+        case .inputList:
             let cell = tableView.dequeueReusableCell(withIdentifier: "InOutListTableViewCell", for: indexPath) as! InOutListTableViewCell
             let section = indexPath.section - 3
             
@@ -176,9 +177,6 @@ extension StatisticViewController: UITableViewDataSource {
             cell.detailUseLabel.text = inOutCell[section][indexPath.row].detailUse
             
             return cell
-            
-        default:
-            return UITableViewCell()
         }
     }
 }

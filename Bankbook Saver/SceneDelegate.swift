@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import RealmSwift
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -20,7 +21,26 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         guard let windowScene = scene as? UIWindowScene else { return }
         
+        let realm = try! Realm()
+        // 내부 디비에 저장된 화면모드 데이터 가져오기
+        let myPageDisplayMode = realm.objects(MyPageDisplayModeEntity.self).first ?? MyPageDisplayModeEntity()
+        
         window = UIWindow(frame: UIScreen.main.bounds)
+        
+        // 화면모드 적용
+        switch myPageDisplayMode.displayMode {
+        case DisplayType.dark.rawValue:
+            window?.overrideUserInterfaceStyle = .dark
+            
+        case DisplayType.light.rawValue:
+            window?.overrideUserInterfaceStyle = .light
+            
+        case DisplayType.system.rawValue:
+            window?.overrideUserInterfaceStyle = .unspecified
+            
+        default:
+            window?.overrideUserInterfaceStyle = .unspecified
+        }
         
         let tabBarController = UITabBarController()
         

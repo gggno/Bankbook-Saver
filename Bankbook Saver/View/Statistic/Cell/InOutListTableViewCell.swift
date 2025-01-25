@@ -57,8 +57,6 @@ class InOutListTableViewCell: UITableViewCell {
     }
     
     func addSubViews() {
-        print("InOutListTableViewCell - addSubViews() called")
-        
         self.inOutView.addSubview(emojiLabel)
         
         self.inOutView.addSubview(moneyLabel)
@@ -69,8 +67,6 @@ class InOutListTableViewCell: UITableViewCell {
     }
     
     func setLayout() {
-        print("InOutListTableViewCell - setLayout() called")
-        
         self.emojiLabel.backgroundColor = .yellow
         
         emojiLabel.snp.makeConstraints { make in
