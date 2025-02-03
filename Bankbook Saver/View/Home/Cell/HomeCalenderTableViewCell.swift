@@ -13,8 +13,9 @@ class HomeCalenderTableViewCell: UITableViewCell {
     // 임시 위치(enum, 선언 위치 변경 해야 함)
     let days: [String] = ["일", "월", "화", "수", "목", "금", "토"]
     
-    // 임시 데이터
-    var dayValue: [String] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31].map{String($0)}
+    var dayValue: [String] = []
+    
+    var lineCnt = 0
     
     lazy var weekStackView: UIStackView = {
         let stackView = UIStackView()
@@ -94,10 +95,17 @@ class HomeCalenderTableViewCell: UITableViewCell {
             // 5: 줄 개수(유동적)
             // 40: minimumLineSpacing의 개수(유동적)
             // 20: top(10), bottom(10)의 EdgeInset(고정)
-            make.height.equalTo((UIScreen.main.bounds.width - 60 - 20) / 7 * 5 + 40 + 20)
+            make.height.equalTo((UIScreen.main.bounds.width - 60 - 20) / 7 * CGFloat(lineCnt) + 10 * CGFloat(lineCnt-1) + 20)
             make.leading.equalToSuperview()
             make.trailing.equalToSuperview()
             make.bottom.equalToSuperview()
+        }
+    }
+    
+    // 콜렉션 뷰 높이 업데이트
+    func updateCollectionViewHeight(lineCnt: Int) {
+        calendarCollectionView.snp.updateConstraints { make in
+            make.height.equalTo((UIScreen.main.bounds.width - 60 - 20) / 7 * CGFloat(lineCnt) + 10 * CGFloat(lineCnt-1) + 20)
         }
     }
     

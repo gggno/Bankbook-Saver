@@ -68,7 +68,7 @@ extension MypageViewController: View {
         
         
         
-        // State - binding
+        // State - binding 
         reactor
             .state
             .observe(on: MainScheduler.instance)

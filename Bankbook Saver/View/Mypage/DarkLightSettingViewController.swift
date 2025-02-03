@@ -93,7 +93,6 @@ extension DarkLightSettingViewController: UITableViewDataSource {
             cell.checkImageView.image = nil
         }
         
-        
         return cell
     }
     

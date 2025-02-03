@@ -9,7 +9,7 @@ import UIKit
 import ReactorKit
 import SnapKit
 
-class HomeViewController: UIViewController, View {
+class HomeViewController: UIViewController {
     
     var disposeBag: DisposeBag = DisposeBag()
     
@@ -64,10 +64,7 @@ class HomeViewController: UIViewController, View {
         setLayout()
         
         self.reactor = HomeReactor()
-    }
-    
-    func bind(reactor: HomeReactor) {
-        
+        self.reactor?.getCalendarData()
     }
     
 }
@@ -109,6 +106,13 @@ extension HomeViewController {
     }
 }
 
+extension HomeViewController: View {
+    func bind(reactor: HomeReactor) {
+        // 날짜 가져오기
+        reactor.action.onNext(.fetchDateAction)
+    }
+}
+
 extension HomeViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1 + inOutHeader.count
@@ -146,6 +150,18 @@ extension HomeViewController: UITableViewDataSource {
         switch sectionType {
         case .homeCalendar:
             let cell = tableView.dequeueReusableCell(withIdentifier: "HomeCalenderTableViewCell", for: indexPath) as! HomeCalenderTableViewCell
+            
+            let days = self.reactor?.currentState.selectedDate ?? []
+            
+            cell.dayValue = days
+            
+            // 날짜 개수에 따라 줄 개수 구하는 계산식
+            if days.count % 7 == 0 {
+                cell.updateCollectionViewHeight(lineCnt: days.count / 7)
+            } else {
+                cell.updateCollectionViewHeight(lineCnt: (days.count / 7) + 1)
+            }
+            
             return cell
             
         case .homeInOutList:
