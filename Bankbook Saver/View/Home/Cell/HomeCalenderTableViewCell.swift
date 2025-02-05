@@ -7,15 +7,45 @@
 
 import UIKit
 import SnapKit
+import RxSwift
 
 class HomeCalenderTableViewCell: UITableViewCell {
     
-    // 임시 위치(enum, 선언 위치 변경 해야 함)
-    let days: [String] = ["일", "월", "화", "수", "목", "금", "토"]
-    
+    // 선택한 달의 날 데이터(ex 1...31)
     var dayValue: [String] = []
     
-    var lineCnt = 0
+    let lastMonthButtonTapped = PublishSubject<Void>()
+    let nextMonthButtonTapped = PublishSubject<Void>()
+    
+    var disposeBag: DisposeBag = DisposeBag()
+    
+    lazy var lastMonthButton: UIButton = {
+        let button = UIButton()
+        button.setImage(UIImage(systemName: "arrowtriangle.left.fill"), for: .normal)
+        return button
+    }()
+    
+    lazy var monthLabel: UILabel = {
+        let label = UILabel()
+        label.text = "2월"
+        return label
+    }()
+    
+    lazy var nextMonthButton: UIButton = {
+        let button = UIButton()
+        button.setImage(UIImage(systemName: "arrowtriangle.right.fill"), for: .normal)
+        return button
+    }()
+    
+    lazy var monthStackView: UIStackView = {
+        let stackView = UIStackView()
+        
+        stackView.axis = .horizontal
+        stackView.distribution = .fillEqually
+        stackView.spacing = 20
+        
+        return stackView
+    }()
     
     lazy var weekStackView: UIStackView = {
         let stackView = UIStackView()
@@ -46,6 +76,14 @@ class HomeCalenderTableViewCell: UITableViewCell {
         
         calendarCollectionView.dataSource = self
         calendarCollectionView.delegate = self
+        
+        lastMonthButton.rx.tap
+            .bind(to: lastMonthButtonTapped)
+            .disposed(by: disposeBag)
+        
+        nextMonthButton.rx.tap
+            .bind(to: nextMonthButtonTapped)
+            .disposed(by: disposeBag)
     }
     
     required init?(coder: NSCoder) {
@@ -64,9 +102,14 @@ class HomeCalenderTableViewCell: UITableViewCell {
     }
     
     func addSubViews() {
+        self.contentView.addSubview(monthStackView)
+        monthStackView.addArrangedSubview(lastMonthButton)
+        monthStackView.addArrangedSubview(monthLabel)
+        monthStackView.addArrangedSubview(nextMonthButton)
+        
         self.contentView.addSubview(weekStackView)
         
-        for day in days {
+        for day in ["일", "월", "화", "수", "목", "금", "토"] {
             let label = UILabel()
             label.backgroundColor = .brown
             label.text = day
@@ -80,9 +123,14 @@ class HomeCalenderTableViewCell: UITableViewCell {
     
     func setLayout() {
         calendarCollectionView.backgroundColor = .green
-
-        weekStackView.snp.makeConstraints { make in
+        
+        monthStackView.snp.makeConstraints { make in
             make.top.equalToSuperview()
+            make.centerX.equalToSuperview()
+        }
+        
+        weekStackView.snp.makeConstraints { make in
+            make.top.equalTo(monthStackView.snp.bottom).offset(10)
             make.leading.equalToSuperview().offset(10)
             make.trailing.equalToSuperview().offset(-10)
             make.bottom.equalTo(calendarCollectionView.snp.top)
@@ -95,7 +143,7 @@ class HomeCalenderTableViewCell: UITableViewCell {
             // 5: 줄 개수(유동적)
             // 40: minimumLineSpacing의 개수(유동적)
             // 20: top(10), bottom(10)의 EdgeInset(고정)
-            make.height.equalTo((UIScreen.main.bounds.width - 60 - 20) / 7 * CGFloat(lineCnt) + 10 * CGFloat(lineCnt-1) + 20)
+            make.height.equalTo((UIScreen.main.bounds.width - 60 - 20) / 7 * 5 + 10 * 40 + 20)
             make.leading.equalToSuperview()
             make.trailing.equalToSuperview()
             make.bottom.equalToSuperview()

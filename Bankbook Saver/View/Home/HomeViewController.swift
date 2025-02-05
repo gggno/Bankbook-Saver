@@ -8,6 +8,8 @@
 import UIKit
 import ReactorKit
 import SnapKit
+import RxSwift
+import RxCocoa
 
 class HomeViewController: UIViewController {
     
@@ -64,7 +66,6 @@ class HomeViewController: UIViewController {
         setLayout()
         
         self.reactor = HomeReactor()
-        self.reactor?.getCalendarData()
     }
     
 }
@@ -108,8 +109,35 @@ extension HomeViewController {
 
 extension HomeViewController: View {
     func bind(reactor: HomeReactor) {
-        // 날짜 가져오기
-        reactor.action.onNext(.fetchDateAction)
+        // 처음에 날짜 가져오기(초기값 0)
+        reactor.action.onNext(.fetchDateAction(count: 0))
+        
+        homeTableView.rx.willDisplayCell
+            .compactMap { ($0.cell as? HomeCalenderTableViewCell) }
+            .distinctUntilChanged()
+            .subscribe { cell in
+                cell.lastMonthButtonTapped
+                    .subscribe(onNext: {
+                        print("이전 달 버튼 탭 감지")
+                        reactor.action.onNext(.fetchDateAction(count: -1))
+                        cell.dayValue = reactor.currentState.selectedDays
+                        cell.calendarCollectionView.reloadData()
+                        self.homeTableView.reloadData()
+                    })
+                    .disposed(by: cell.disposeBag)
+                
+                cell.nextMonthButtonTapped
+                    .subscribe(onNext: {
+                        print("다음 달 버튼 탭 감지")
+                        reactor.action.onNext(.fetchDateAction(count: 1))
+                        cell.dayValue = reactor.currentState.selectedDays
+                        cell.calendarCollectionView.reloadData()
+                        self.homeTableView.reloadData()
+                    })
+                    .disposed(by: cell.disposeBag)
+            }
+            .disposed(by: disposeBag)
+        
     }
 }
 
@@ -151,8 +179,9 @@ extension HomeViewController: UITableViewDataSource {
         case .homeCalendar:
             let cell = tableView.dequeueReusableCell(withIdentifier: "HomeCalenderTableViewCell", for: indexPath) as! HomeCalenderTableViewCell
             
-            let days = self.reactor?.currentState.selectedDate ?? []
+            cell.monthLabel.text = self.reactor?.currentState.selectedMonth
             
+            let days = self.reactor?.currentState.selectedDays ?? []
             cell.dayValue = days
             
             // 날짜 개수에 따라 줄 개수 구하는 계산식
