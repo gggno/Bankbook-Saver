@@ -66,6 +66,8 @@ class HomeViewController: UIViewController {
         setLayout()
         
         self.reactor = HomeReactor()
+        
+        
     }
     
 }
@@ -112,6 +114,7 @@ extension HomeViewController: View {
         // 처음에 날짜 가져오기(초기값 0)
         reactor.action.onNext(.fetchDateAction(count: 0))
         
+        // 이전 달 또는 다음 달 날짜 가져오기
         homeTableView.rx.willDisplayCell
             .compactMap { ($0.cell as? HomeCalenderTableViewCell) }
             .distinctUntilChanged()
@@ -138,6 +141,13 @@ extension HomeViewController: View {
             }
             .disposed(by: disposeBag)
         
+        // 거래내역 화면으로 이동
+        floatingButton.rx.tap
+            .subscribe { _ in
+                let addVC = AddTransactionViewController()
+                self.navigationController?.pushViewController(addVC, animated: true)
+            }
+            .disposed(by: disposeBag)
     }
 }
 
