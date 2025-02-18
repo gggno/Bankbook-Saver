@@ -8,6 +8,7 @@
 import Foundation
 
 struct InOutCellInfo {
+    let transactionType: String
     let emoji: String
     let money: String
     let detailUse: String

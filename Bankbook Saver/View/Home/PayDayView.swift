@@ -9,20 +9,20 @@ import UIKit
 import SnapKit
 
 class PayDayView: UIView {
-    private let payDayLabel: UILabel = {
+    lazy var payDayLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16)
         return label
     }()
     
-    private let dateLabel: UILabel = {
+    lazy var dateLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16)
 
         return label
     }()
     
-    private let payDayImageView: UIImageView = {
+    lazy var payDayImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(systemName: "chevron.right")
         return imageView
@@ -63,9 +63,8 @@ class PayDayView: UIView {
             make.centerY.equalToSuperview()
             make.trailing.equalToSuperview()
             make.size.equalTo(16)
+            make.bottom.equalToSuperview()
         }
-        
-        
     }
     
 }

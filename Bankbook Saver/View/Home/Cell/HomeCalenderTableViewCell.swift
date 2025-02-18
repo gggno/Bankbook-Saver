@@ -8,11 +8,15 @@
 import UIKit
 import SnapKit
 import RxSwift
+import RxRelay
 
 class HomeCalenderTableViewCell: UITableViewCell {
     
     // 선택한 달의 날 데이터(ex 1...31)
     var dayValue: [String] = []
+    // 지출/수입 금액 데이터
+    var inComeMoneys = BehaviorRelay<[Int]>(value: [])
+    var outComeMoneys = BehaviorRelay<[Int]>(value: [])
     
     let lastMonthButtonTapped = PublishSubject<Void>()
     let nextMonthButtonTapped = PublishSubject<Void>()
@@ -83,6 +87,16 @@ class HomeCalenderTableViewCell: UITableViewCell {
         
         nextMonthButton.rx.tap
             .bind(to: nextMonthButtonTapped)
+            .disposed(by: disposeBag)
+        
+        // collectionView 리로드
+        Observable.combineLatest(inComeMoneys, outComeMoneys)
+            .distinctUntilChanged { lhs, rhs in
+                    return lhs == rhs
+                }
+            .subscribe(onNext: { [weak self] _, _ in
+                self?.calendarCollectionView.reloadData()
+            })
             .disposed(by: disposeBag)
     }
     
@@ -167,6 +181,11 @@ extension HomeCalenderTableViewCell: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "HomeCalenderCollectionViewCell", for: indexPath) as! HomeCalenderCollectionViewCell
         cell.dateLabel.text = dayValue[indexPath.row]
+        
+        cell.inLabel.text = String(inComeMoneys.value[indexPath.row]) != "0" ? String(inComeMoneys.value[indexPath.row]) : ""
+        cell.outLabel.text = String(outComeMoneys.value[indexPath.row]) != "0" ? String(outComeMoneys.value[indexPath.row]) : ""
+        cell.outLabel.text = String(outComeMoneys.value[indexPath.row]) != "0" ? String(outComeMoneys.value[indexPath.row]) : ""
+        
         return cell
     }
     

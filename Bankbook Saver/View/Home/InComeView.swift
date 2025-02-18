@@ -7,21 +7,28 @@
 
 import UIKit
 import SnapKit
+import RxSwift
 
 class InComeView: UIView {
     
-    lazy var moneyInputFieldView: UIView = {
-        let view = InputFieldView(title: "금액을 입력하세요", placeholder: "금액을 입력하세요", unitText: "원")
+    let categories = CategoryType.allCases  // 임시
+    var selectedIndexPath: IndexPath?       // 임시
+    
+    let selectedDate = PublishSubject<Date>()
+    let selectedCategoryIndex = PublishSubject<Int>()
+    
+    lazy var moneyInputFieldView: InputFieldView = {
+        let view = InputFieldView(title: "금액을 입력하세요", placeholder: "금액을 입력하세요", keyboardType: .numberPad, unitText: "원")
         view.backgroundColor = .blue
         return view
     }()
     
-    lazy var expensePurposeInputFieldView: UIView = {
+    lazy var expensePurposeInputFieldView: InputFieldView = {
         let view = InputFieldView(title: "수입처를 입력하세요", placeholder: "수입처를 입력하세요")
         return view
     }()
     
-    lazy var payDayView: UIView = {
+    lazy var payDayView: PayDayView = {
         let view = PayDayView(payTypeText: "수입일시", dateText: "2월 5일 16:39")
         view.backgroundColor = .red
         view.isUserInteractionEnabled = true
@@ -30,6 +37,32 @@ class InComeView: UIView {
         view.addGestureRecognizer(tapGesture)
         
         return view
+    }()
+    
+    lazy var hiddenTextField: UITextField = {
+        let textField = UITextField()
+        textField.tintColor = .clear
+        textField.inputView = datePicker
+        textField.inputAccessoryView = toolBar
+        return textField
+    }()
+    
+    lazy var datePicker: UIDatePicker = {
+        let picker = UIDatePicker()
+        picker.datePickerMode = .dateAndTime
+        picker.locale = Locale(identifier: "ko_KR")
+        picker.preferredDatePickerStyle = .wheels
+        picker.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
+        return picker
+    }()
+    
+    lazy var toolBar: UIToolbar = {
+        let toolBar = UIToolbar()
+        toolBar.sizeToFit()
+        let doneButton = UIBarButtonItem(title: "완료", style: .done, target: self, action: #selector(dismissPicker))
+        let space = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        toolBar.setItems([space, doneButton], animated: false)
+        return toolBar
     }()
     
     lazy var repeatStateLabel: UILabel = {
@@ -51,11 +84,15 @@ class InComeView: UIView {
         return label
     }()
     
-    // 카테고리 목록들 나오게 수정해야 함.
-    lazy var tempCategoryView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .systemBlue
-        return view
+    lazy var categoryCollectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.minimumLineSpacing = 30
+        layout.minimumInteritemSpacing = 10
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        
+        collectionView.register(CategoryCollectionViewCell.self, forCellWithReuseIdentifier: "CategoryCollectionViewCell")
+        
+        return collectionView
     }()
     
     lazy var memoLabel: UILabel = {
@@ -90,6 +127,9 @@ class InComeView: UIView {
         super.init(frame: frame)
         addSubViews()
         setLayout()
+        
+        categoryCollectionView.dataSource = self
+        categoryCollectionView.delegate = self
     }
     
     required init?(coder: NSCoder) {
@@ -102,12 +142,13 @@ class InComeView: UIView {
         self.addSubview(expensePurposeInputFieldView)
         
         self.addSubview(payDayView)
+        self.addSubview(hiddenTextField)
         
         self.addSubview(repeatStateLabel)
         self.addSubview(repeatState)
         
         self.addSubview(categoryLabel)
-        self.addSubview(tempCategoryView)
+        self.addSubview(categoryCollectionView)
         
         self.addSubview(memoLabel)
         self.addSubview(memoTextField)
@@ -153,15 +194,17 @@ class InComeView: UIView {
             make.leading.equalToSuperview().offset(20)
         }
         
-        tempCategoryView.snp.makeConstraints { make in
-            make.height.equalTo(300)
-            make.top.equalTo(categoryLabel.snp.bottom).offset(20)
+        categoryCollectionView.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.top.equalTo(categoryLabel.snp.bottom).offset(30)
             make.leading.equalToSuperview().offset(20)
-            make.trailing.equalToSuperview().offset(-20)
+            // (UIScreen.main.bounds.width - 100 - 20) / 4 -> 하나의 셀 높이
+            // minimumLineSpacing(30) -> 세로의 셀 간격
+            make.height.equalTo(((UIScreen.main.bounds.width - 100 - 20) / 4) * 4 + (30 * 3) + 20)
         }
         
         memoLabel.snp.makeConstraints { make in
-            make.top.equalTo(tempCategoryView.snp.bottom).offset(30)
+            make.top.equalTo(categoryCollectionView.snp.bottom).offset(30)
             make.leading.equalToSuperview().offset(20)
         }
         
@@ -191,9 +234,20 @@ class InComeView: UIView {
         
     }
     
-    @objc func payDayViewTap() {
-        print("payDayView tapped!")
+    // 지출일시 탭
+    @objc func payDayViewTap(_ sender: UITapGestureRecognizer) {
+        hiddenTextField.becomeFirstResponder()
+    }
+    
+    // 지출일시 날짜 변경하기
+    @objc func dateChanged(_ sender: UIDatePicker) {
         
+    }
+    
+    // 데이트픽커 사라지기
+    @objc func dismissPicker() {
+        hiddenTextField.resignFirstResponder()
+        selectedDate.onNext(datePicker.date)
     }
     
     @objc func switchToggle(_ sender: UISwitch) {
@@ -206,4 +260,47 @@ class InComeView: UIView {
         }
     }
     
+}
+
+extension InComeView: UICollectionViewDataSource {
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return categories.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CategoryCollectionViewCell", for: indexPath) as! CategoryCollectionViewCell
+        //        cell.backgroundColor = .brown
+        cell.emijiLabel.text = categories[indexPath.row].emoji
+        cell.nameLabel.text = categories[indexPath.row].title
+        
+        if indexPath == selectedIndexPath {
+            cell.backgroundColor = .gray
+            selectedCategoryIndex.onNext(indexPath.row)
+        } else {
+            cell.backgroundColor = .clear
+        }
+        
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        selectedIndexPath = indexPath
+        categoryCollectionView.reloadData()
+    }
+}
+
+extension InComeView: UICollectionViewDelegateFlowLayout {
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        return UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        // 60: minimumInteritemSpacing의 개수(고정)
+        // 20: leading(10), trailing(20)의 EdgeInset(고정)
+        let width = (UIScreen.main.bounds.width - 100 - 20) / 4
+        
+        return CGSize(width: width, height: width)
+    }
 }

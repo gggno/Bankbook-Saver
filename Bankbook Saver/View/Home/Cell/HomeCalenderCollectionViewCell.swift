@@ -9,6 +9,10 @@ import UIKit
 import SnapKit
 
 class HomeCalenderCollectionViewCell: UICollectionViewCell {
+    // 지출/수입 금액 데이터
+    var inComeMoneys: [Int] = []
+    var outComeMoneys: [Int] = []
+    
     lazy var dateLabel: UILabel = {
         let label = UILabel()
         label.backgroundColor = .red
@@ -23,7 +27,6 @@ class HomeCalenderCollectionViewCell: UICollectionViewCell {
         label.font = .systemFont(ofSize: 8)
         label.textAlignment = .center
         label.textColor = .blue
-        label.text = "+35,000"
         return label
     }()
     
@@ -32,7 +35,6 @@ class HomeCalenderCollectionViewCell: UICollectionViewCell {
         label.font = .systemFont(ofSize: 8)
         label.textAlignment = .center
         label.textColor = .red
-        label.text = "-26,000"
         return label
     }()
     

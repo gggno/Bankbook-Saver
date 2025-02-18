@@ -13,8 +13,6 @@ import RxCocoa
 
 class HomeViewController: UIViewController {
     
-    var disposeBag: DisposeBag = DisposeBag()
-    
     lazy var floatingButton: UIButton = {
         let button = UIButton()
         button.setTitle("+", for: .normal)
@@ -35,25 +33,7 @@ class HomeViewController: UIViewController {
         return tableView
     }()
     
-    // 임시 데이터
-    var inOutHeader: [String] = ["6일 월요일", "5일 일요일", "4일 토요일"]
-    var inOutCell: [[InOutCellInfo]] = [
-        [
-            .init(emoji: "\u{1F600}", money: "+10", detailUse: "매일 용돈 받기"),
-            .init(emoji: "\u{1F600}", money: "-3000", detailUse: "병원"),
-            .init(emoji: "\u{1F600}", money: "-7600", detailUse: "약국"),
-            .init(emoji: "\u{1F600}", money: "+10", detailUse: "매일 혜택 받기"),
-        ],
-        [
-            .init(emoji: "\u{1F600}", money: "-32000", detailUse: "쿠팡"),
-            .init(emoji: "\u{1F600}", money: "-36990", detailUse: "네이버페이"),
-            .init(emoji: "\u{1F600}", money: "+15000", detailUse: "입금"),
-        ],
-        [
-            .init(emoji: "\u{1F600}", money: "-4500", detailUse: "현대카드"),
-            .init(emoji: "\u{1F600}", money: "-52000", detailUse: "통신비")
-        ]
-    ]
+    var disposeBag: DisposeBag = DisposeBag()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -66,10 +46,18 @@ class HomeViewController: UIViewController {
         setLayout()
         
         self.reactor = HomeReactor()
-        
-        
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        print("HomeViewController - viewWillAppear() called")
+
+        // 처음에 날짜 가져오기(초기값 0)
+        self.reactor?.action.onNext(.fetchDataAction(count: 0))
+        homeTableView.reloadData()
+        // calendarCollectionView reload 해야 됨
+        
+    }
 }
 
 // UI
@@ -111,8 +99,8 @@ extension HomeViewController {
 
 extension HomeViewController: View {
     func bind(reactor: HomeReactor) {
-        // 처음에 날짜 가져오기(초기값 0)
-        reactor.action.onNext(.fetchDateAction(count: 0))
+//        // 처음에 날짜 가져오기(초기값 0)
+//        reactor.action.onNext(.fetchDataAction(count: 0))
         
         // 이전 달 또는 다음 달 날짜 가져오기
         homeTableView.rx.willDisplayCell
@@ -122,7 +110,7 @@ extension HomeViewController: View {
                 cell.lastMonthButtonTapped
                     .subscribe(onNext: {
                         print("이전 달 버튼 탭 감지")
-                        reactor.action.onNext(.fetchDateAction(count: -1))
+                        reactor.action.onNext(.fetchDataAction(count: -1))
                         cell.dayValue = reactor.currentState.selectedDays
                         cell.calendarCollectionView.reloadData()
                         self.homeTableView.reloadData()
@@ -132,7 +120,7 @@ extension HomeViewController: View {
                 cell.nextMonthButtonTapped
                     .subscribe(onNext: {
                         print("다음 달 버튼 탭 감지")
-                        reactor.action.onNext(.fetchDateAction(count: 1))
+                        reactor.action.onNext(.fetchDataAction(count: 1))
                         cell.dayValue = reactor.currentState.selectedDays
                         cell.calendarCollectionView.reloadData()
                         self.homeTableView.reloadData()
@@ -153,7 +141,7 @@ extension HomeViewController: View {
 
 extension HomeViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 1 + inOutHeader.count
+        return 1 + (reactor?.currentState.inOutData.keys.count ?? 0)
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
@@ -162,7 +150,15 @@ extension HomeViewController: UITableViewDataSource {
             return nil
             
         case 1...:
-            return inOutHeader[section-1]
+            if let headers = reactor?.currentState.inOutData.keys.sorted(by: { lhs, rhs in
+                let leftDay = Int(lhs.components(separatedBy: "일").first ?? "0") ?? 0
+                let rightDay = Int(rhs.components(separatedBy: "일").first ?? "0") ?? 0
+                return leftDay < rightDay
+            }) {
+                return headers[section - 1]
+            }
+            
+            return nil
             
         default:
             return nil
@@ -175,8 +171,17 @@ extension HomeViewController: UITableViewDataSource {
             return 1
             
         case 1...:
-            return inOutCell[section-1].count
+            if let headers = reactor?.currentState.inOutData.keys.sorted(by: { lhs, rhs in
+                let leftDay = Int(lhs.components(separatedBy: "일").first ?? "0") ?? 0
+                let rightDay = Int(rhs.components(separatedBy: "일").first ?? "0") ?? 0
+                return leftDay < rightDay
+            }) {
+                let key = headers[section - 1]
+                return reactor?.currentState.inOutData[key]?.count ?? 0
+            }
             
+            return 0
+                
         default:
             return 0
         }
@@ -194,6 +199,12 @@ extension HomeViewController: UITableViewDataSource {
             let days = self.reactor?.currentState.selectedDays ?? []
             cell.dayValue = days
             
+            let inComeMoneys = self.reactor?.currentState.inComeMoneys ?? []
+            cell.inComeMoneys.accept(inComeMoneys)
+            
+            let outComeMoneys = self.reactor?.currentState.outComeMoneys ?? []
+            cell.outComeMoneys.accept(outComeMoneys)
+            
             // 날짜 개수에 따라 줄 개수 구하는 계산식
             if days.count % 7 == 0 {
                 cell.updateCollectionViewHeight(lineCnt: days.count / 7)
@@ -207,11 +218,19 @@ extension HomeViewController: UITableViewDataSource {
             //            let cell = tableView.dequeueReusableCell(withIdentifier: "SelectedInOutTableViewCell", for: indexPath) as! SelectedInOutTableViewCell
             //            return cell
             let cell = tableView.dequeueReusableCell(withIdentifier: "InOutListTableViewCell", for: indexPath) as! InOutListTableViewCell
-            let section = indexPath.section - 1
             
-            cell.emojiLabel.text = inOutCell[section][indexPath.row].emoji
-            cell.moneyLabel.text = inOutCell[section][indexPath.row].money
-            cell.detailUseLabel.text = inOutCell[section][indexPath.row].detailUse
+            if let headers = reactor?.currentState.inOutData.keys.sorted(by: { lhs, rhs in
+                let leftDay = Int(lhs.components(separatedBy: "일").first ?? "0") ?? 0
+                let rightDay = Int(rhs.components(separatedBy: "일").first ?? "0") ?? 0
+                return leftDay < rightDay
+            }) {
+                let key = headers[indexPath.section - 1]
+                if let inOutCell = reactor?.currentState.inOutData[key] {
+                    cell.emojiLabel.text = inOutCell[indexPath.row].emoji
+                    cell.moneyLabel.text = inOutCell[indexPath.row].money
+                    cell.detailUseLabel.text = inOutCell[indexPath.row].detailUse
+                }
+            }
             
             return cell
         }

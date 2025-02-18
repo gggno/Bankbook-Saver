@@ -10,19 +10,19 @@ import SnapKit
 
 class InputFieldView: UIView {
     
-    private let titleLabel: UILabel = {
+    lazy var titleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 15)
         return label
     }()
     
-    private let textField: UITextField = {
+    lazy var textField: UITextField = {
         let textField = UITextField()
         textField.backgroundColor = .brown
         return textField
     }()
     
-    private let unitLabel: UILabel = {
+    lazy var unitLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 16, weight: .regular)
         label.textColor = .black
@@ -30,7 +30,7 @@ class InputFieldView: UIView {
         return label
     }()
     
-    private let underlineView: UIView = {
+    lazy var underlineView: UIView = {
         let view = UIView()
         view.backgroundColor = .black
         return view

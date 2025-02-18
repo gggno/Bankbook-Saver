@@ -7,8 +7,13 @@
 
 import UIKit
 import SnapKit
+import ReactorKit
+import RxSwift
+import RxCocoa
 
 class AddTransactionViewController: UIViewController {
+    
+    let tempData: PublishSubject<Int> = PublishSubject<Int>()
     
     lazy var segmentControl: UISegmentedControl = {
         let segmentControl = UISegmentedControl(items: ["지출", "수입"])
@@ -16,13 +21,13 @@ class AddTransactionViewController: UIViewController {
         return segmentControl
     }()
     
-    lazy var expenseView: UIView = {
+    lazy var expenseView: ExpenseView = {
         let view = ExpenseView()
         
         return view
     }()
     
-    lazy var inComeView: UIView = {
+    lazy var inComeView: InComeView = {
         let view = InComeView()
         
         return view
@@ -37,10 +42,12 @@ class AddTransactionViewController: UIViewController {
         let view = UIView()
         return view
     }()
-
+    
+    var disposeBag: DisposeBag = DisposeBag()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.backgroundColor = .systemYellow
+        self.view.backgroundColor = .systemGroupedBackground
         self.title = "거래 내역 추가하기"
         
         addSubViews()
@@ -51,8 +58,10 @@ class AddTransactionViewController: UIViewController {
         inComeView.isHidden = true
         
         segmentControl.addTarget(self, action: #selector(didChangeValue(_:)), for: .valueChanged)
+        
+        self.reactor = AddTransactionReactor()
     }
-
+    
 }
 
 // MARK: - UI
@@ -67,6 +76,7 @@ extension AddTransactionViewController {
         backgroundView.addSubview(segmentControl)
         backgroundView.addSubview(expenseView)
         backgroundView.addSubview(inComeView)
+        
     }
     
     func setLayout() {
@@ -122,5 +132,130 @@ extension AddTransactionViewController {
             self.expenseView.isHidden = false
             self.inComeView.isHidden = true
         }
+    }
+}
+
+extension AddTransactionViewController: View {
+    func bind(reactor: AddTransactionReactor) {
+        
+        // 거래 내역 타입
+        segmentControl.rx.selectedSegmentIndex
+            .map{$0 == 0 ? "지출" : "수입"}
+            .map{.updateTransactionTypeAction($0)}
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        // 금액 입력
+        expenseView.moneyInputFieldView.textField.rx.text
+            .orEmpty
+            .map { .updateMoneyTextAction($0) }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        inComeView.moneyInputFieldView.textField.rx.text
+            .orEmpty
+            .map { .updateMoneyTextAction($0) }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        // 지출/수입처 입력
+        expenseView.expensePurposeInputFieldView.textField.rx.text
+            .orEmpty
+            .map{ .updatePurposeTextAction($0) }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        inComeView.expensePurposeInputFieldView.textField.rx.text
+            .orEmpty
+            .map{ .updatePurposeTextAction($0) }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        // 일시
+        expenseView.selectedDate.subscribe { selectedDate in
+            reactor.action.onNext(.updatePurposeDateAction(selectedDate))
+        }
+        .disposed(by: disposeBag)
+        
+        inComeView.selectedDate.subscribe { selectedDate in
+            reactor.action.onNext(.updatePurposeDateAction(selectedDate))
+        }
+        .disposed(by: disposeBag)
+        
+        // 매월 반복
+        expenseView.repeatState.rx.isOn
+            .map{.repeatStateAction($0)}
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        inComeView.repeatState.rx.isOn
+            .map{.repeatStateAction($0)}
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        // 지출수단
+        expenseView.typeSegmentControl.rx.selectedSegmentIndex
+            .map{.expenseKindAction($0)}
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        // 카테고리
+        expenseView.selectedCategoryIndex.subscribe { selectedIndex in
+            reactor.action.onNext(.updateCategoryIndexAction(selectedIndex))
+        }
+        .disposed(by: disposeBag)
+        
+        // 메모 입력
+        expenseView.memoTextField.rx.text
+            .orEmpty
+            .map{.updateMemoTextAction($0)}
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        inComeView.memoTextField.rx.text
+            .orEmpty
+            .map{.updateMemoTextAction($0)}
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        // 확인 버튼 탭
+        expenseView.confirmButton.rx.tap
+            .subscribe { _ in
+                // realm에 입력한 지출/수입 데이터 저장
+                reactor.action.onNext(.addHomeDataAction)
+            }
+            .disposed(by: disposeBag)
+        
+        
+        // 바인딩
+        reactor.state
+            .map { state in
+                let formatter = DateFormatter()
+                formatter.locale = Locale(identifier: "ko_KR")
+                formatter.dateFormat = "M월 d일 HH:mm"
+                return formatter.string(from: state.purposeDate)
+            }
+            .bind(to: self.expenseView.payDayView.dateLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        reactor.state
+            .map { state in
+                let formatter = DateFormatter()
+                formatter.locale = Locale(identifier: "ko_KR")
+                formatter.dateFormat = "M월 d일 HH:mm"
+                return formatter.string(from: state.purposeDate)
+            }
+            .bind(to: self.inComeView.payDayView.dateLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        reactor.state
+            .map{ $0.purposeDate}
+            .bind(to: expenseView.datePicker.rx.date)
+            .disposed(by: disposeBag)
+        
+        reactor.state
+            .map{ $0.purposeDate }
+            .bind(to: inComeView.datePicker.rx.date)
+            .disposed(by: disposeBag)
     }
 }
