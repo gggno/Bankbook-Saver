@@ -7,12 +7,17 @@
 
 import UIKit
 import SnapKit
+import RxSwift
 
 class StatsTableViewCell: UITableViewCell {
     
+    let leftButtonTapped = PublishSubject<Void>()
+    let rightButtonTapped = PublishSubject<Void>()
+    
+    var disposeBag: DisposeBag = DisposeBag()
+    
     lazy var dateLabel: UILabel = {
         let label = UILabel()
-        label.text = "2024년 12월"
         label.font = .systemFont(ofSize: 20, weight: .semibold)
         return label
     }()
@@ -40,7 +45,6 @@ class StatsTableViewCell: UITableViewCell {
     
     lazy var inComeMoneyLabel: UILabel = {
         let label = UILabel()
-        label.text = "0원"
         return label
     }()
     
@@ -60,7 +64,6 @@ class StatsTableViewCell: UITableViewCell {
     
     lazy var withdrawMoneyLabel: UILabel = {
         let label = UILabel()
-        label.text = "35000원"
         return label
     }()
     
@@ -80,6 +83,14 @@ class StatsTableViewCell: UITableViewCell {
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        
+        leftMoveButton.rx.tap
+            .bind(to: leftButtonTapped)
+            .disposed(by: disposeBag)
+        
+        rightMoveButton.rx.tap
+            .bind(to: rightButtonTapped)
+            .disposed(by: disposeBag)
         
         addSubViews()
         setLayout()

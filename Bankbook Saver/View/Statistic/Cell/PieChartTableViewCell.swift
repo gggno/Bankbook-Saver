@@ -10,11 +10,14 @@ import SwiftUI
 import SnapKit
 
 class PieChartTableViewCell: UITableViewCell {
-
-    lazy var pieChart: UIView = {
-        let hostingController = UIHostingController(rootView: PieChart())
-        return hostingController.view
-    }()
+    
+    var pieChartDatas: [PieChartInfo] = [] {
+        didSet {
+            updatePieChart()
+        }
+    }
+    
+    private var hostingController: UIHostingController<PieChart>?
     
     lazy var pieChartView: UIView = {
         let view = UIView()
@@ -45,22 +48,30 @@ class PieChartTableViewCell: UITableViewCell {
     }
     
     func addSubViews() {
-        pieChartView.addSubview(pieChart)
-        
         self.contentView.addSubview(pieChartView)
     }
     
     func setLayout() {
-        pieChart.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-        }
-        
         pieChartView.snp.makeConstraints { make in
             make.height.equalTo(250)
             make.centerX.equalTo(self.contentView.snp.centerX)
             make.top.equalTo(self.contentView.snp.top)
             make.leading.equalTo(20)
             make.bottom.equalTo(self.contentView.snp.bottom).offset(-30)
+        }
+    }
+    
+    private func updatePieChart() {
+        hostingController?.view.removeFromSuperview()
+        
+        let newHostingController = UIHostingController(rootView: PieChart(pieChartDatas: pieChartDatas))
+        hostingController = newHostingController
+        guard let pieChart = hostingController?.view else {return}
+        
+        self.pieChartView.addSubview(pieChart)
+        
+        pieChart.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
     }
 

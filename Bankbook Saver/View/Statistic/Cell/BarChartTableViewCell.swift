@@ -8,20 +8,24 @@
 import UIKit
 import SwiftUI
 import SnapKit
+import RxSwift
+import RxRelay
 
 class BarChartTableViewCell: UITableViewCell {
+    
+    var barChartDatas: [BarChartInfo] = [] {
+        didSet {
+            updateBarChart()
+        }
+    }
+    
+    private var hostingController: UIHostingController<BarChart>?
     
     lazy var previousSpendLabel: UILabel = {
         let label = UILabel()
         label.text = "11월에는 19만원 더 썼어요"
         return label
     }()
-    
-    lazy var barChart: UIView = {
-        let hostingController = UIHostingController(rootView: BarChart())
-        return hostingController.view
-    }()
-    
     
     lazy var barChartView: UIView = {
         let view = UIView()
@@ -52,8 +56,6 @@ class BarChartTableViewCell: UITableViewCell {
     func addSubViews() {
         barChartView.addSubview(previousSpendLabel)
         
-        barChartView.addSubview(barChart)
-        
         self.contentView.addSubview(barChartView)
     }
     
@@ -64,19 +66,29 @@ class BarChartTableViewCell: UITableViewCell {
             make.leading.equalToSuperview()
         }
         
+        barChartView.snp.makeConstraints { make in
+            make.top.equalTo(previousSpendLabel.snp.bottom).offset(20)
+            make.leading.equalToSuperview().offset(20)
+            make.trailing.equalToSuperview().offset(-20)
+            make.height.equalTo(150)
+            make.bottom.equalTo(self.contentView.snp.bottom).offset(-30)
+        }
+    }
+    
+    func updateBarChart() {
+        hostingController?.view.removeFromSuperview()
+        
+        let newHostingController = UIHostingController(rootView: BarChart(barChartDatas: barChartDatas))
+        hostingController = newHostingController
+        guard let barChart = hostingController?.view else {return}
+        
+        self.barChartView.addSubview(barChart)
+        
         barChart.snp.makeConstraints { make in
             make.top.equalTo(previousSpendLabel.snp.bottom).offset(20)
             make.leading.equalToSuperview()
             make.trailing.equalToSuperview()
             make.bottom.equalToSuperview()
-        }
-        
-        barChartView.snp.makeConstraints { make in
-            make.height.equalTo(150)
-            make.centerX.equalTo(self.contentView.snp.centerX)
-            make.top.equalTo(self.contentView.snp.top)
-            make.leading.equalTo(20)
-            make.bottom.equalTo(self.contentView.snp.bottom).offset(-30)
         }
     }
     

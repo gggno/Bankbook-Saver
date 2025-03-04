@@ -10,13 +10,7 @@ import Charts
 
 struct PieChart: View {
     
-    let pieChartDatas: [PieChartInfo] = [
-        .init(category: "교통비", amount: 123000),
-        .init(category: "식비", amount: 355000),
-        .init(category: "병원비", amount: 78000),
-        .init(category: "통신비", amount: 50000),
-        .init(category: "쇼핑", amount: 243000)
-    ]
+    @State var pieChartDatas: [PieChartInfo] = []
     
     var body: some View {
         Chart(pieChartDatas) { chartData in

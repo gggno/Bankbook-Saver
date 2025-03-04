@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct BarChartInfo: Identifiable {
+struct BarChartInfo: Identifiable, Equatable {
     var id: UUID = UUID()
     
     let month: String
