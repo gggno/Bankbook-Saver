@@ -22,6 +22,7 @@ class DarkLightReactor: Reactor {
     struct State {}
     
     var initialState: State = State()
+    
     let myPageReactor: MypageReactor
     
     init(myPageReactor: MypageReactor) {

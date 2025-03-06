@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum DisplaySectionIntType: Int, CaseIterable {
+enum DisplayRowIntType: Int, CaseIterable {
     case dark = 0
     case light = 1
     case system = 2

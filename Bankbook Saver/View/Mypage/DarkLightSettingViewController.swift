@@ -71,7 +71,7 @@ extension DarkLightSettingViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let rowIntType = DisplaySectionIntType(rawValue: indexPath.row)
+        let rowIntType = DisplayRowIntType(rawValue: indexPath.row)
         let cell = tableView.dequeueReusableCell(withIdentifier: "DisplayModeTableViewCell", for: indexPath) as! DisplayModeTableViewCell
         
         cell.selectionStyle = .none
@@ -86,7 +86,7 @@ extension DarkLightSettingViewController: UITableViewDataSource {
         default:
             break
         }
-        
+         
         if let reactor = self.reactor, reactor.myPageReactor.currentState.displayIntType == rowIntType?.rawValue {
             cell.checkImageView.image = UIImage(systemName: "checkmark")
         } else {
@@ -97,7 +97,7 @@ extension DarkLightSettingViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let rowIntType = DisplaySectionIntType(rawValue: indexPath.row) else {return}
+        guard let rowIntType = DisplayRowIntType(rawValue: indexPath.row) else {return}
         
         switch rowIntType {
         case .dark:

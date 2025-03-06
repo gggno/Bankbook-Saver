@@ -81,7 +81,7 @@ extension MypageViewController: View {
 
 extension MypageViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 4
+        return 3
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
@@ -107,14 +107,15 @@ extension MypageViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let sectionType = MypageSectionType(rawValue: indexPath.section)
-        let rowType = MypageRowType(rawValue: indexPath.row)
+        let generalRowType = MypageGeneralRowType(rawValue: indexPath.row)
+        let notiRowType = MyPageNotiRowType(rawValue: indexPath.row)
         
         switch sectionType {
         case .general:
-            switch rowType {
-            case .wish:
-                let wishVC = WishListViewController()
-                self.navigationController?.pushViewController(wishVC, animated: true)
+            switch generalRowType {
+//            case .wish:
+//                let wishVC = WishListViewController()
+//                self.navigationController?.pushViewController(wishVC, animated: true)
             
             case .displayMode:
                 let myPageReactor = self.reactor ?? MypageReactor()
@@ -129,12 +130,22 @@ extension MypageViewController: UITableViewDataSource {
             }
             
         case .noti:
-            let notiSettingVC = NotiSettingViewController()
-            self.navigationController?.pushViewController(notiSettingVC, animated: true)
+            switch notiRowType {
+            case .notiSetting:
+                let notiSettingVC = NotiSettingViewController()
+                self.navigationController?.pushViewController(notiSettingVC, animated: true)
+           
+            case .savingNoti:
+                let notiSettingVC = NotiSettingViewController()
+                self.navigationController?.pushViewController(notiSettingVC, animated: true)
             
-        case .saving:
-            let accountVC = AccountViewController()
-            self.navigationController?.pushViewController(accountVC, animated: true)
+            default:
+                break
+            }
+            
+//        case .etc:
+//            let accountVC = AccountViewController()
+//            self.navigationController?.pushViewController(accountVC, animated: true)
             
         default:
             break

@@ -10,5 +10,5 @@ import Foundation
 enum MypageSectionType: Int, CaseIterable {
     case general = 0
     case noti = 1
-    case saving = 2
+    case etc = 2
 }

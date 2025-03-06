@@ -11,6 +11,18 @@ import RealmSwift
 class RealmManager {
     static let shared = RealmManager()
     
+    // 첫번째 실행 DB 생성
+    func createIsFirstLaunch() {
+        let realm = try! Realm()
+        
+        let isFirstLaunch = IsFirstLaunchEntity()
+        isFirstLaunch.isFirstLaunch = true
+        
+        try! realm.write {
+            realm.add(isFirstLaunch)
+        }
+    }
+    
     // 화면모드 DB 생성
     func creatDisplayMode(displayMode: String) {
         let realm = try! Realm()

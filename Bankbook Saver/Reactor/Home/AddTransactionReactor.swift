@@ -38,7 +38,7 @@ class AddTransactionReactor: Reactor {
         
         case addHomeDataMutation                    // 로컬에 저장
     }
-    
+     
     // out
     struct State {
         var transactionType: String = ""
@@ -84,7 +84,7 @@ extension AddTransactionReactor {
         case .updateCategoryIndexAction(let index):
             return .just(.updateCategoryIndexMutation(index))
         
-        case .addHomeDataAction:
+        case .addHomeDataAction:    // 지출 확인 버튼을 탭 했을 때
             return .just(.addHomeDataMutation)
         }
     }
@@ -142,6 +142,17 @@ extension AddTransactionReactor {
                 homeData.memoText = currentState.memoText
                 
                 realm.add(homeData)
+                
+                // 추후 수정하는 로직에서 한번 더 살펴봐야 함
+                // 정기 구독 결제일 알림 등록/해제
+                if currentState.repeatState {
+                    LocalNotiManager.shared.setRepeatPayment(id: homeData._id.stringValue,
+                                                             purposeText: homeData.purposeText,
+                                                             purposeDate: homeData.purposeDate)
+                    
+                } else {
+                    LocalNotiManager.shared.cancelRepeatPayment(id: homeData._id.stringValue)
+                }
             }
         }
         

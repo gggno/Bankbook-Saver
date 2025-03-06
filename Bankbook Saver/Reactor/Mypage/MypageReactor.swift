@@ -36,17 +36,13 @@ class MypageReactor: Reactor {
     
     // out
     struct State {
-        var myPageHeaders: [String] = ["일반", "알림", "저축 관리", "기타"]
-        var myPageRow: [[MypageCellInfo]] = [[MypageCellInfo(title: "위시리스트",
-                                                             rightImageName: "chevron.right"),
-                                              MypageCellInfo(title: "다크/라이트모드 설정",
-                                                             rightImageName:"chevron.right",
-                                                             rightImageText: "기본값")],
+        var myPageHeaders: [String] = ["일반", "알림", "기타"]
+        var myPageRow: [[MypageCellInfo]] = [[MypageCellInfo(title: "다크/라이트모드 설정",
+                                                            rightImageName:"chevron.right",
+                                                            rightImageText: "기본값")
+                                              ],
                                              
                                              [MypageCellInfo(title: "알림 설정",
-                                                             rightImageName: "chevron.right")],
-                                             
-                                             [MypageCellInfo(title: "계좌 관리",
                                                              rightImageName: "chevron.right")],
                                              
                                              [MypageCellInfo(title: "별점 선물하기",
@@ -57,7 +53,7 @@ class MypageReactor: Reactor {
         var wishItems: [MypageWishDataEntity] = []
         
         var myPageDisplayMode: MyPageDisplayModeEntity = MyPageDisplayModeEntity()
-        var displayIntType = DisplaySectionIntType.system.rawValue
+        var displayIntType = DisplayRowIntType.system.rawValue
         var myDisplayMode: MyPageDisplayModeEntity = MyPageDisplayModeEntity()
         
         var notiDatas: [MypageNotiEntity] = []
@@ -156,20 +152,20 @@ extension MypageReactor {
             // 다크/라이트모드 텍스트로 보여주기
             switch myPageDisplayMode.displayMode {
             case DisplayType.dark.rawValue:
-                newState.displayIntType = DisplaySectionIntType.dark.rawValue
-                newState.myPageRow[0][1].rightImageText = "다크"
+                newState.displayIntType = DisplayRowIntType.dark.rawValue
+                newState.myPageRow[0][0].rightImageText = "다크"
                 
             case DisplayType.light.rawValue:
-                newState.displayIntType = DisplaySectionIntType.light.rawValue
-                newState.myPageRow[0][1].rightImageText = "라이트"
+                newState.displayIntType = DisplayRowIntType.light.rawValue
+                newState.myPageRow[0][0].rightImageText = "라이트"
                 
             case DisplayType.system.rawValue:
-                newState.displayIntType = DisplaySectionIntType.system.rawValue
-                newState.myPageRow[0][1].rightImageText = "시스템"
+                newState.displayIntType = DisplayRowIntType.system.rawValue
+                newState.myPageRow[0][0].rightImageText = "시스템"
                 
             default:
-                newState.displayIntType = DisplaySectionIntType.system.rawValue
-                newState.myPageRow[0][1].rightImageText = "시스템"
+                newState.displayIntType = DisplayRowIntType.system.rawValue
+                newState.myPageRow[0][0].rightImageText = "시스템"
             }
             
             return newState
@@ -179,14 +175,14 @@ extension MypageReactor {
             newState.myDisplayMode.displayMode = displayMode
             switch displayMode {
             case "다크":
-                newState.displayIntType = DisplaySectionIntType.dark.rawValue
-                newState.myPageRow[0][1].rightImageText = "다크"
+                newState.displayIntType = DisplayRowIntType.dark.rawValue
+                newState.myPageRow[0][0].rightImageText = "다크"
             case "라이트":
-                newState.displayIntType = DisplaySectionIntType.light.rawValue
-                newState.myPageRow[0][1].rightImageText = "라이트"
+                newState.displayIntType = DisplayRowIntType.light.rawValue
+                newState.myPageRow[0][0].rightImageText = "라이트"
             case "시스템":
-                newState.displayIntType = DisplaySectionIntType.system.rawValue
-                newState.myPageRow[0][1].rightImageText = "시스템"
+                newState.displayIntType = DisplayRowIntType.system.rawValue
+                newState.myPageRow[0][0].rightImageText = "시스템"
             default:
                 break
             }
@@ -195,7 +191,7 @@ extension MypageReactor {
             
         case .getCurrentVersionMutation(let version):
             newState.currentVersion = version
-            newState.myPageRow[3][1].rightText = version
+            newState.myPageRow[2][1].rightText = version
             return newState
         
         }
