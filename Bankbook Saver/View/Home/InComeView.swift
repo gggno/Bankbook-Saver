@@ -11,10 +11,10 @@ import RxSwift
 
 class InComeView: UIView {
     
-    let categories = CategoryType.allCases  // 임시
-    var selectedIndexPath: IndexPath?       // 임시
+    let categories = InComeCategoryType.allCases
+    var selectedIndexPath: IndexPath = IndexPath(row: 0, section: 0)
     
-    let selectedDate = PublishSubject<Date>()
+    let incomeSelectedDate = BehaviorSubject<Date>(value: Date())
     let selectedCategoryIndex = PublishSubject<Int>()
     
     lazy var moneyInputFieldView: InputFieldView = {
@@ -23,7 +23,7 @@ class InComeView: UIView {
         return view
     }()
     
-    lazy var expensePurposeInputFieldView: InputFieldView = {
+    lazy var incomePurposeInputFieldView: InputFieldView = {
         let view = InputFieldView(title: "수입처를 입력하세요", placeholder: "수입처를 입력하세요")
         return view
     }()
@@ -139,7 +139,7 @@ class InComeView: UIView {
     func addSubViews() {
         self.addSubview(moneyInputFieldView)
         
-        self.addSubview(expensePurposeInputFieldView)
+        self.addSubview(incomePurposeInputFieldView)
         
         self.addSubview(payDayView)
         self.addSubview(hiddenTextField)
@@ -164,14 +164,14 @@ class InComeView: UIView {
             make.trailing.equalToSuperview().offset(-20)
         }
         
-        expensePurposeInputFieldView.snp.makeConstraints { make in
+        incomePurposeInputFieldView.snp.makeConstraints { make in
             make.top.equalTo(moneyInputFieldView.snp.bottom).offset(30)
             make.leading.equalToSuperview().offset(20)
             make.trailing.equalToSuperview().offset(-20)
         }
         
         payDayView.snp.makeConstraints { make in
-            make.top.equalTo(expensePurposeInputFieldView.snp.bottom).offset(30)
+            make.top.equalTo(incomePurposeInputFieldView.snp.bottom).offset(30)
             make.leading.equalToSuperview().offset(20)
             make.trailing.equalToSuperview().offset(-20)
 //            make.height.equalTo(40)
@@ -200,7 +200,7 @@ class InComeView: UIView {
             make.leading.equalToSuperview().offset(20)
             // (UIScreen.main.bounds.width - 100 - 20) / 4 -> 하나의 셀 높이
             // minimumLineSpacing(30) -> 세로의 셀 간격
-            make.height.equalTo(((UIScreen.main.bounds.width - 100 - 20) / 4) * 4 + (30 * 3) + 20)
+            make.height.equalTo(((UIScreen.main.bounds.width - 100 - 20) / 4) + 20)
         }
         
         memoLabel.snp.makeConstraints { make in
@@ -247,7 +247,7 @@ class InComeView: UIView {
     // 데이트픽커 사라지기
     @objc func dismissPicker() {
         hiddenTextField.resignFirstResponder()
-        selectedDate.onNext(datePicker.date)
+        incomeSelectedDate.onNext(datePicker.date)
     }
     
     @objc func switchToggle(_ sender: UISwitch) {

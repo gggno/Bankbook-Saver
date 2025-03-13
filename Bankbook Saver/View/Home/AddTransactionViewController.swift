@@ -13,7 +13,7 @@ import RxCocoa
 
 class AddTransactionViewController: UIViewController {
     
-    let tempData: PublishSubject<Int> = PublishSubject<Int>()
+    var transactionId: String?
     
     lazy var segmentControl: UISegmentedControl = {
         let segmentControl = UISegmentedControl(items: ["지출", "수입"])
@@ -47,19 +47,40 @@ class AddTransactionViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        print("AddTransactionViewController - viewDidLoad() called")
+        
         self.view.backgroundColor = .systemGroupedBackground
         self.title = "거래 내역 추가하기"
         
         addSubViews()
         setLayout()
         
-        // 처음에는 지출 화면 나타나게 하기
-        expenseView.isHidden = false
-        inComeView.isHidden = true
-        
         segmentControl.addTarget(self, action: #selector(didChangeValue(_:)), for: .valueChanged)
         
         self.reactor = AddTransactionReactor()
+    }
+    
+    // 지출/수입화면 변경
+    @objc func didChangeValue(_ segment: UISegmentedControl) {
+        print("AddTransactionViewController - didChangeValue() called")
+        switch segmentControl.selectedSegmentIndex {
+        case 0:
+            self.expenseView.isHidden = false
+            self.inComeView.isHidden = true
+        case 1:
+            self.expenseView.isHidden = true
+            self.inComeView.isHidden = false
+            
+        default:
+            self.expenseView.isHidden = false
+            self.inComeView.isHidden = true
+        }
+    }
+    
+    // 거래 내역 삭제하기
+    @objc func deleteTransactionData() {
+        print("AddTransactionViewController - deleteTransactionData() called")
+        reactor?.action.onNext(.removeExistDataAction(self.transactionId))
     }
      
 }
@@ -82,6 +103,16 @@ extension AddTransactionViewController {
     func setLayout() {
         print("AddTransactionViewController - setLayout() called")
         
+        // 오른쪽 상단 삭제 버튼
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "삭제", style: .plain, target: self, action: #selector(deleteTransactionData))
+        
+        // 수정하기가 아니면 삭제 버튼 히든
+        if transactionId != nil {
+            self.navigationItem.rightBarButtonItem?.isHidden = false
+        } else {
+            self.navigationItem.rightBarButtonItem?.isHidden = true
+        }
+            
         addTransScrollView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
@@ -117,22 +148,6 @@ extension AddTransactionViewController {
             make.trailing.equalToSuperview()
         }
     }
-    
-    @objc func didChangeValue(_ segment: UISegmentedControl) {
-        print("AddTransactionViewController - didChangeValue() called")
-        switch segmentControl.selectedSegmentIndex {
-        case 0:
-            self.expenseView.isHidden = false
-            self.inComeView.isHidden = true
-        case 1:
-            self.expenseView.isHidden = true
-            self.inComeView.isHidden = false
-            
-        default:
-            self.expenseView.isHidden = false
-            self.inComeView.isHidden = true
-        }
-    }
 }
 
 extension AddTransactionViewController: View {
@@ -165,19 +180,21 @@ extension AddTransactionViewController: View {
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
         
-        inComeView.expensePurposeInputFieldView.textField.rx.text
+        inComeView.incomePurposeInputFieldView.textField.rx.text
             .orEmpty
             .map{ .updatePurposeTextAction($0) }
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
         
         // 일시
-        expenseView.selectedDate.subscribe { selectedDate in
+        expenseView.expenseSelectedDate.subscribe { selectedDate in
+            print("expenseView.selectedDate.subscribe")
             reactor.action.onNext(.updatePurposeDateAction(selectedDate))
         }
         .disposed(by: disposeBag)
         
-        inComeView.selectedDate.subscribe { selectedDate in
+        inComeView.incomeSelectedDate.subscribe { selectedDate in
+            print("inComeView.selectedDate.subscribe")
             reactor.action.onNext(.updatePurposeDateAction(selectedDate))
         }
         .disposed(by: disposeBag)
@@ -204,6 +221,12 @@ extension AddTransactionViewController: View {
             reactor.action.onNext(.updateCategoryIndexAction(selectedIndex))
         }
         .disposed(by: disposeBag)
+         
+        inComeView.selectedCategoryIndex.subscribe { selectedIndex in
+            reactor.action.onNext(.updateCategoryIndexAction(selectedIndex))
+        }
+        .disposed(by: disposeBag)
+        
         
         // 메모 입력
         expenseView.memoTextField.rx.text
@@ -221,7 +244,18 @@ extension AddTransactionViewController: View {
         // 확인 버튼 탭
         expenseView.confirmButton.rx.tap
             .subscribe { _ in
-                // realm에 입력한 지출/수입 데이터 저장
+                // 등록한 지출/수입을 수정할 때 기존에 저장된 데이터는 삭제(realm에서 삭제, 정기 알림도 삭제)
+                reactor.action.onNext(.removeExistDataAction(self.transactionId))
+                // realm에 입력한 지출 데이터 저장
+                reactor.action.onNext(.addHomeDataAction)
+            }
+            .disposed(by: disposeBag)
+        
+        inComeView.confirmButton.rx.tap
+            .subscribe { _ in
+                // 등록한 지출/수입을 수정할 때 기존에 저장된 데이터는 삭제(realm에서 삭제, 정기 알림도 삭제)
+                reactor.action.onNext(.removeExistDataAction(self.transactionId))
+                // realm에 입력한 수입 데이터 저장
                 reactor.action.onNext(.addHomeDataAction)
             }
             .disposed(by: disposeBag)

@@ -11,12 +11,12 @@ import RxSwift
 
 class ExpenseView: UIView {
     
-    let categories = CategoryType.allCases  // 임시
-    var selectedIndexPath: IndexPath?       // 임시
+    let categories = ExposeCategoryType.allCases
+    var selectedIndexPath: IndexPath = IndexPath(row: 0, section: 0)
     
-    let selectedDate = PublishSubject<Date>()
-    let selectedCategoryIndex = PublishSubject<Int>()
-    
+    let expenseSelectedDate = BehaviorSubject<Date>(value: Date())
+    let selectedCategoryIndex = BehaviorSubject<Int>(value: 0)
+     
     lazy var moneyInputFieldView: InputFieldView = {
         let view = InputFieldView(title: "금액을 입력하세요", placeholder: "금액을 입력하세요", keyboardType: .numberPad, unitText: "원")
         view.backgroundColor = .blue
@@ -263,7 +263,7 @@ class ExpenseView: UIView {
     // 데이트픽커 사라지기
     @objc func dismissPicker() {
         hiddenTextField.resignFirstResponder()
-        selectedDate.onNext(datePicker.date)
+        expenseSelectedDate.onNext(datePicker.date)
     }
     
     @objc func switchToggle(_ sender: UISwitch) {
@@ -290,6 +290,7 @@ extension ExpenseView: UICollectionViewDataSource {
         cell.nameLabel.text = categories[indexPath.row].title
         
         if indexPath == selectedIndexPath {
+            print(indexPath)
             cell.backgroundColor = .gray
             selectedCategoryIndex.onNext(indexPath.row)
         } else {

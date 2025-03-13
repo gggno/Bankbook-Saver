@@ -19,8 +19,9 @@ class HomeReactor: Reactor {
     // 연산
     enum Mutation {
         case fetchDateMutation(year: String, month: String, days: [String], dateCount: Int) // 날짜 불러오기
-        case fetchHomeDatasMutation(inOutDatas: [String: [InOutCellInfo]])         // 지출/수입 데이터 불러오기
-        case fetchInOutMoneyAction(inDatas: [Int], outDatas: [Int])            // 지출/수입 금액 데이터 불러오기
+        case fetchThisMonthDataMutation(thisMonthDatas: [HomeDataEntity])       // 이번 달 지출/수입 모든 데이터 불러오기
+        case fetchHomeDatasMutation(inOutDatas: [String: [InOutCellInfo]])      // 지출/수입 데이터 불러오기
+        case fetchInOutMoneyAction(inDatas: [Int], outDatas: [Int])             // 지출/수입 금액 데이터 불러오기
     }
     
     // out
@@ -33,6 +34,9 @@ class HomeReactor: Reactor {
         
         // 선택한 달의 지출/수입 관련 데이터
         var inOutData: [String: [InOutCellInfo]] = [:]
+        // 선택한 달의 지출/수입 관련 모든 데이터(셀을 클릭했을 때 이용)
+        var thisMonthDatas: [HomeDataEntity] = []
+        
         // 선택한 날의 지출/수입 금액 데이터(calendarCollectionView에 표시하기 위해 사용)
         var inComeMoneys: [Int] = []
         var outComeMoneys: [Int] = []
@@ -73,14 +77,16 @@ extension HomeReactor {
             
             // 지출/수입 데이터 추출
             let allHomeDatas = realm.objects(HomeDataEntity.self)
+                .sorted(byKeyPath: "purposeDate", ascending: true)
             
-            let filterHomeDatas = allHomeDatas.filter {
+            // 이번달 홈 데이터 추출
+            let thisMonthHomeDatas: [HomeDataEntity] = allHomeDatas.filter {
                 let calendar = Calendar.current
                 let filterYear = calendar.component(.year, from: $0.purposeDate)
                 let filterMonth = calendar.component(.month, from: $0.purposeDate)
                 
                 return filterYear == Int(year)! && filterMonth == Int(month)!
-            }
+            }.map { $0 }
             
             var filterInOutDatas: [String: [InOutCellInfo]] = [:]
             
@@ -88,17 +94,18 @@ extension HomeReactor {
             dateFormatter.dateFormat = "d일 EEEE"
             dateFormatter.locale = Locale(identifier: "ko_KR")
             
-            for data in filterHomeDatas {
+            for data in thisMonthHomeDatas {
                 let purposeDate = dateFormatter.string(from: data.purposeDate)
-                let emoji = CategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
+                let emoji = data.transactionType == "수입"
+                ? InComeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
+                : ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
                 let money = data.transactionType == "수입" ? data.money : String(-Int(data.money)!)
                 let detailUse = data.purposeText
                 
-                
                 if filterInOutDatas[purposeDate] == nil {
-                    filterInOutDatas[purposeDate] = [InOutCellInfo(transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
+                    filterInOutDatas[purposeDate] = [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
                 } else {
-                    filterInOutDatas[purposeDate]! += [InOutCellInfo(transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
+                    filterInOutDatas[purposeDate]! += [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
                 }
             }
             
@@ -130,9 +137,12 @@ extension HomeReactor {
                 }
             }
             
+            
             return Observable.concat([
                 // 날짜 데이터
                 .just(.fetchDateMutation(year: year, month: month, days: days, dateCount: currentState.selectedDateCount + dateCount)),
+                // 이번달 지출/수입 모든 데이터
+                .just(.fetchThisMonthDataMutation(thisMonthDatas: thisMonthHomeDatas)),
                 // 로컬디비에서 지출/수입 데이터
                 .just(.fetchHomeDatasMutation(inOutDatas: filterInOutDatas)),
                 // 지출/수입 금액 데이터
@@ -215,6 +225,8 @@ extension HomeReactor {
             newState.selectedDays = days
             newState.selectedDateCount = dateCount
             
+        case .fetchThisMonthDataMutation(thisMonthDatas: let thisMonthDatas):
+            newState.thisMonthDatas = thisMonthDatas
             
         case .fetchHomeDatasMutation(let inOutDatas):
             newState.inOutData = inOutDatas

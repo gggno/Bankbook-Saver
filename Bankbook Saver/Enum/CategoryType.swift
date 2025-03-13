@@ -9,7 +9,7 @@ import Foundation
 
 import UIKit
 
-enum CategoryType: Int, CaseIterable {
+enum ExposeCategoryType: Int, CaseIterable {
     case food = 0
     case transport = 1
     case utility = 2
@@ -39,7 +39,7 @@ enum CategoryType: Int, CaseIterable {
         case .essentials: return "🛒"       // 생필품
         case .cafe: return "☕"             // 카페
         case .shopping: return "🛍️"         // 쇼핑
-        case .investment: return "💰"       // 저축/투자
+        case .investment: return "📈"       // 저축/투자
         case .gift: return "🎁"             // 선물
         case .education: return "📖"        // 교육
         case .beauty: return "🪞"           // 미용
@@ -65,6 +65,31 @@ enum CategoryType: Int, CaseIterable {
         case .education: return "교육"
         case .beauty: return "미용"
         case .insurance: return "보험"
+        case .other: return "기타"
+        }
+    }
+}
+
+enum InComeCategoryType: Int, CaseIterable {
+    case salary = 0             // 월급
+    case sideMoney = 1          // 부수입
+    case pocketMoney = 2        // 용돈
+    case other = 3              // 기타
+    
+    var emoji: String {
+        switch self {
+        case .salary: return "💰"
+        case .sideMoney: return "💸"
+        case .pocketMoney: return "🪙"
+        case .other: return "🎸"
+        }
+    }
+    
+    var title: String {
+        switch self {
+        case .salary: return "월급"
+        case .sideMoney: return "부수입"
+        case .pocketMoney: return "용돈"
         case .other: return "기타"
         }
     }

@@ -26,6 +26,7 @@ class HomeViewController: UIViewController {
         tableView.separatorStyle = .none
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 300
+        tableView.backgroundColor = .systemGroupedBackground
         
         tableView.register(HomeCalenderTableViewCell.self, forCellReuseIdentifier: "HomeCalenderTableViewCell")
         //        tableView.register(SelectedInOutTableViewCell.self, forCellReuseIdentifier: "SelectedInOutTableViewCell")
@@ -56,11 +57,17 @@ class HomeViewController: UIViewController {
         self.reactor?.action.onNext(.fetchDataAction(count: 0))
         homeTableView.reloadData()
         // calendarCollectionView reload 해야 됨
+    }
+    
+    @objc func searchHomeData() {
+        print("HomeViewController - searchHomeData() called")
         
+        let searchHomeDataVC = SearchHomeDataViewController()
+        self.navigationController?.pushViewController(searchHomeDataVC, animated: true)
     }
 }
 
-// UI
+// MARK: - UI
 extension HomeViewController {
     func addSubViews() {
         print("HomeViewController - addSubViews() called")
@@ -80,7 +87,7 @@ extension HomeViewController {
         let leftTitle = UIBarButtonItem(customView: leftLargeTitleLabel)
         self.navigationItem.leftBarButtonItem = leftTitle
         
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "magnifyingglass"), style: .plain, target: nil, action: nil)
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "magnifyingglass"), style: .plain, target: self, action: #selector(searchHomeData))
         
         self.view.backgroundColor = .systemGroupedBackground
         
@@ -133,6 +140,10 @@ extension HomeViewController: View {
         floatingButton.rx.tap
             .subscribe { _ in
                 let addVC = AddTransactionViewController()
+                
+                addVC.expenseView.isHidden = false
+                addVC.inComeView.isHidden = true
+                
                 self.navigationController?.pushViewController(addVC, animated: true)
             }
             .disposed(by: disposeBag)
@@ -194,6 +205,8 @@ extension HomeViewController: UITableViewDataSource {
         case .homeCalendar:
             let cell = tableView.dequeueReusableCell(withIdentifier: "HomeCalenderTableViewCell", for: indexPath) as! HomeCalenderTableViewCell
             
+            cell.selectionStyle = .none
+            
             cell.monthLabel.text = self.reactor?.currentState.selectedMonth
             
             let days = self.reactor?.currentState.selectedDays ?? []
@@ -219,6 +232,8 @@ extension HomeViewController: UITableViewDataSource {
             //            return cell
             let cell = tableView.dequeueReusableCell(withIdentifier: "InOutListTableViewCell", for: indexPath) as! InOutListTableViewCell
             
+            cell.selectionStyle = .none
+            
             if let headers = reactor?.currentState.inOutData.keys.sorted(by: { lhs, rhs in
                 let leftDay = Int(lhs.components(separatedBy: "일").first ?? "0") ?? 0
                 let rightDay = Int(rhs.components(separatedBy: "일").first ?? "0") ?? 0
@@ -231,8 +246,91 @@ extension HomeViewController: UITableViewDataSource {
                     cell.detailUseLabel.text = inOutCell[indexPath.row].detailUse
                 }
             }
-            
+             
             return cell
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let sectionType = HomeSectionType(section: indexPath.section)
+        
+        switch sectionType {
+        case .homeCalendar:
+            break
+            
+        case .homeInOutList:
+            if let headers = reactor?.currentState.inOutData.keys.sorted(by: { lhs, rhs in
+                let leftDay = Int(lhs.components(separatedBy: "일").first ?? "0") ?? 0
+                let rightDay = Int(rhs.components(separatedBy: "일").first ?? "0") ?? 0
+                return leftDay < rightDay
+            }) {
+                let key = headers[indexPath.section - 1]
+                if let inOutCell = reactor?.currentState.inOutData[key],
+                   let thisMonthDatas = reactor?.currentState.thisMonthDatas,
+                   let selectedIndex = thisMonthDatas.firstIndex(where: { $0._id.stringValue == inOutCell[indexPath.row].id }) {
+                    
+                    let addVC = AddTransactionViewController()
+                    addVC.transactionId = thisMonthDatas[selectedIndex]._id.stringValue
+                    
+                    if thisMonthDatas[selectedIndex].transactionType == "지출" {
+                        addVC.expenseView.isHidden = false
+                        addVC.inComeView.isHidden = true
+                    } else {
+                        addVC.expenseView.isHidden = true
+                        addVC.inComeView.isHidden = false
+                    }
+                    
+                    // 지출/수입 세그먼트 컨트롤
+                    addVC.segmentControl.selectedSegmentIndex = thisMonthDatas[selectedIndex].transactionType == "지출" ? 0 : 1
+                    // 머니 텍스트
+                    if thisMonthDatas[selectedIndex].transactionType == "지출" {
+                        addVC.expenseView.moneyInputFieldView.textField.text = thisMonthDatas[selectedIndex].money
+                    } else {
+                        addVC.inComeView.moneyInputFieldView.textField.text = thisMonthDatas[selectedIndex].money
+                    }
+                    
+                    // 지출처/수입처
+                    if thisMonthDatas[selectedIndex].transactionType == "지출" {
+                        addVC.expenseView.expensePurposeInputFieldView.textField.text = thisMonthDatas[selectedIndex].purposeText
+                    } else {
+                        addVC.inComeView.incomePurposeInputFieldView.textField.text = thisMonthDatas[selectedIndex].purposeText
+                    }
+                    
+                    // 일시
+                    addVC.expenseView.expenseSelectedDate.onNext(thisMonthDatas[selectedIndex].purposeDate)
+                    addVC.inComeView.incomeSelectedDate.onNext(thisMonthDatas[selectedIndex].purposeDate)
+                    
+                    // 매월 반복
+                    if thisMonthDatas[selectedIndex].transactionType == "지출" {
+                        addVC.expenseView.repeatState.isOn = thisMonthDatas[selectedIndex].repeatState
+                    } else {
+                        addVC.inComeView.repeatState.isOn = thisMonthDatas[selectedIndex].repeatState
+                    }
+                    
+                    // 지불 수단(지출인 경우만)
+                    if thisMonthDatas[selectedIndex].transactionType == "지출" {
+                        addVC.expenseView.typeSegmentControl.selectedSegmentIndex = thisMonthDatas[selectedIndex].expenseKind
+                    }
+                    
+                    // 카테고리
+                    if thisMonthDatas[selectedIndex].transactionType == "지출" {
+                        addVC.expenseView.selectedIndexPath = [0, thisMonthDatas[selectedIndex].selectedCategoryIndex]
+                        addVC.expenseView.selectedCategoryIndex.onNext(thisMonthDatas[selectedIndex].selectedCategoryIndex)
+                    } else {
+                        addVC.inComeView.selectedIndexPath = [0, thisMonthDatas[selectedIndex].selectedCategoryIndex]
+                        addVC.inComeView.selectedCategoryIndex.onNext(thisMonthDatas[selectedIndex].selectedCategoryIndex)
+                    }
+                    
+                    // 메모
+                    if thisMonthDatas[selectedIndex].transactionType == "지출" {
+                        addVC.expenseView.memoTextField.text = thisMonthDatas[selectedIndex].memoText
+                    } else {
+                        addVC.inComeView.memoTextField.text = thisMonthDatas[selectedIndex].memoText
+                    }
+                    
+                    self.navigationController?.pushViewController(addVC, animated: true)
+                }
+            }
         }
     }
 }

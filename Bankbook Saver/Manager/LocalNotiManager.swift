@@ -73,7 +73,7 @@ class LocalNotiManager {
         }
     }
     
-    // 정기 구독 결제일 알림 등록
+    // 매월 정기 구독 결제일 알림 등록
     func setRepeatPayment(id: String, purposeText: String, purposeDate: Date) {
         print("LocalNotiManager - setRepeatPayment()")
         
@@ -113,14 +113,63 @@ class LocalNotiManager {
                 print("setRepeatPayment - Notification Error: ", error)
             }
         }
-        
     }
     
-    // 정기 구독 결제일 알림 해제
-    func cancelRepeatPayment(id: String) {
-        print("LocalNotiManager - cancelRepeatPayment()")
+    // 매월 정기 수입일 알림 등록
+    func setRepeatIncome(id: String, purposeText: String, purposeDate: Date) {
+        print("LocalNotiManager - setRepeatIncome()")
+        
+        let identifier = "RepeatIncome_\(id)"
+        
+        // 1. 알림 내용 작성
+        let notificationContent = UNMutableNotificationContent()
+        notificationContent.title = "내일은 \(purposeText)이 들어올 예정입니다."
+        notificationContent.sound = .default
+        
+        
+        // 2. 알림 시간 작성(시간, 반복)
+        // 하루 전 날짜 계산
+        let calendar = Calendar.current
+        guard let dayBeforePurposeDate = calendar.date(byAdding: .day, value: -1, to: purposeDate) else {
+            return
+        }
+        
+        // 어제 day값 추출
+        let yesterday = calendar.dateComponents([.day], from: dayBeforePurposeDate).day
+        
+        var dateComponents = DateComponents()
+        dateComponents.day = yesterday
+        dateComponents.hour = 20  // 8시
+        dateComponents.minute = 0  // 0분
+        
+        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
+        
+        // 3. 요청
+        let request = UNNotificationRequest(identifier: identifier,
+                                            content: notificationContent,
+                                            trigger: trigger)
+        
+        // 4. 알림 등록
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("setRepeatIncome - Notification Error: ", error)
+            }
+        }
+    }
+    
+    // 매월 지출 알림 해제
+    func cancelRepeatPaymentNoti(id: String) {
+        print("LocalNotiManager - cancelRepeatPaymentNoti()")
         
         let identifier = "RepeatPayment_\(id)"
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
+    }
+    
+    // 매월 수입 알림 해제
+    func cancelRepeatIncomeNoti(id: String) {
+        print("LocalNotiManager - cancelRepeatIncomeNoti()")
+        
+        let identifier = "RepeatIncome_\(id)"
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
     }
 

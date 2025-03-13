@@ -23,6 +23,7 @@ class AddTransactionReactor: Reactor {
         case updateMemoTextAction(String)       // 메모 입력
         
         case addHomeDataAction                  // 로컬에 저장
+        case removeExistDataAction(String?)      // 거래 내역을 수정할 경우 기존 데이터는 삭제
     }
     
     // 연산
@@ -41,17 +42,17 @@ class AddTransactionReactor: Reactor {
      
     // out
     struct State {
+        var transactionId: String = ""
         var transactionType: String = ""
         var moneyText: String = ""
         var purposeText: String = ""
         var purposeDate: Date = Date()
         var repeatState: Bool = false
         var expenseKind: Int = 0
-        var categoryDatas = CategoryType.allCases
         var selectedCategoryIndex: Int = 0
         var memoText: String = ""
     }
-    
+     
     let initialState: State = State()
     
     let realm = try! Realm()
@@ -84,8 +85,24 @@ extension AddTransactionReactor {
         case .updateCategoryIndexAction(let index):
             return .just(.updateCategoryIndexMutation(index))
         
-        case .addHomeDataAction:    // 지출 확인 버튼을 탭 했을 때
+        case .addHomeDataAction:    // 확인 버튼을 탭 했을 때
             return .just(.addHomeDataMutation)
+            
+        case .removeExistDataAction(let id):// 등록된 거래내역 데이터 삭제하기(realm에서 삭제, 정기 알림도 삭제 후 다시
+            guard let id = id, let objectId = try? ObjectId(string: id) else { return .empty() }
+            
+            // 기존에 등록된 거래내역 데이터 삭제
+            try! realm.write {
+                if let homeData = realm.objects(HomeDataEntity.self).filter("_id == %@", objectId).first {
+                    realm.delete(homeData)
+                }
+            }
+            
+            // 기존에 등록된 정기 알림 삭제
+            LocalNotiManager.shared.cancelRepeatPaymentNoti(id: id)
+            LocalNotiManager.shared.cancelRepeatIncomeNoti(id: id)
+            
+            return .empty()
         }
     }
 }
@@ -108,7 +125,7 @@ extension AddTransactionReactor {
             newState.purposeText = text
             
         case .updatePurposeDateMutation(let date):
-            print(date)
+            print("date: \(date)")
             newState.purposeDate = date
         
         case .updateMemoTextMutation(let text):
@@ -143,15 +160,18 @@ extension AddTransactionReactor {
                 
                 realm.add(homeData)
                 
-                // 추후 수정하는 로직에서 한번 더 살펴봐야 함
-                // 정기 구독 결제일 알림 등록/해제
+                // 정기 구독 결제일 알림 등록
                 if currentState.repeatState {
-                    LocalNotiManager.shared.setRepeatPayment(id: homeData._id.stringValue,
-                                                             purposeText: homeData.purposeText,
-                                                             purposeDate: homeData.purposeDate)
+                    if homeData.transactionType == "지출" {
+                        LocalNotiManager.shared.setRepeatPayment(id: homeData._id.stringValue,
+                                                                 purposeText: homeData.purposeText,
+                                                                 purposeDate: homeData.purposeDate)
+                    } else if homeData.transactionType == "수입" {
+                        LocalNotiManager.shared.setRepeatIncome(id: homeData._id.stringValue,
+                                                                purposeText: homeData.purposeText,
+                                                                purposeDate: homeData.purposeDate)
+                    }
                     
-                } else {
-                    LocalNotiManager.shared.cancelRepeatPayment(id: homeData._id.stringValue)
                 }
             }
         }

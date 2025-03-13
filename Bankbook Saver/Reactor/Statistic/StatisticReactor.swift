@@ -162,7 +162,7 @@ extension StatisticReactor {
                 
                 var dic: [String: Int] = [:]
                 for data in outComeDatas {
-                    let category = CategoryType(rawValue: data.selectedCategoryIndex)?.title ?? ""
+                    let category = ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.title ?? ""
                     
                     if dic[category] == nil {
                         dic[category] = Int(data.money)!
@@ -182,15 +182,17 @@ extension StatisticReactor {
                 
                 for data in dayFilterDatas {
                     let purposeDate = dateFormatter.string(from: data.purposeDate)
-                    let emoji = CategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
+                    let emoji = data.transactionType == "수입"
+                    ? InComeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
+                    : ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
                     let money = data.transactionType == "수입" ? data.money : String(-Int(data.money)!)
                     let detailUse = data.purposeText
-                    
+                    let detailDate = data.purposeDate
                     
                     if inOutDatas[purposeDate] == nil {
-                        inOutDatas[purposeDate] = [InOutCellInfo(transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
+                        inOutDatas[purposeDate] = [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
                     } else {
-                        inOutDatas[purposeDate]! += [InOutCellInfo(transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
+                        inOutDatas[purposeDate]! += [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
                     }
                 }
                 
@@ -277,7 +279,7 @@ extension StatisticReactor {
                 
                 var dic: [String: Int] = [:]
                 for data in outComeDatas {
-                    let category = CategoryType(rawValue: data.selectedCategoryIndex)?.title ?? ""
+                    let category = ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.title ?? ""
                     
                     if dic[category] == nil {
                         dic[category] = Int(data.money)!
@@ -297,15 +299,17 @@ extension StatisticReactor {
                 
                 for data in weekOfMonthDbDatas {
                     let purposeDate = dateFormatter.string(from: data.purposeDate)
-                    let emoji = CategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
+                    let emoji = data.transactionType == "수입"
+                    ? InComeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
+                    : ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
                     let money = data.transactionType == "수입" ? data.money : String(-Int(data.money)!)
                     let detailUse = data.purposeText
-                    
+                    let detailDate = data.purposeDate
                     
                     if inOutDatas[purposeDate] == nil {
-                        inOutDatas[purposeDate] = [InOutCellInfo(transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
+                        inOutDatas[purposeDate] = [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
                     } else {
-                        inOutDatas[purposeDate]! += [InOutCellInfo(transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
+                        inOutDatas[purposeDate]! += [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
                     }
                 }
                 
@@ -382,7 +386,7 @@ extension StatisticReactor {
                 
                 var dic: [String: Int] = [:]
                 for data in outComeDatas {
-                    let category = CategoryType(rawValue: data.selectedCategoryIndex)?.title ?? ""
+                    let category = ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.title ?? ""
                     
                     if dic[category] == nil {
                         dic[category] = Int(data.money)!
@@ -402,15 +406,17 @@ extension StatisticReactor {
                 
                 for data in monthFilterDatas {
                     let purposeDate = dateFormatter.string(from: data.purposeDate)
-                    let emoji = CategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
+                    let emoji = data.transactionType == "수입"
+                    ? InComeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
+                    : ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
                     let money = data.transactionType == "수입" ? data.money : String(-Int(data.money)!)
                     let detailUse = data.purposeText
-                    
+                    let detailDate = data.purposeDate
                     
                     if inOutDatas[purposeDate] == nil {
-                        inOutDatas[purposeDate] = [InOutCellInfo(transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
+                        inOutDatas[purposeDate] = [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
                     } else {
-                        inOutDatas[purposeDate]! += [InOutCellInfo(transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
+                        inOutDatas[purposeDate]! += [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
                     }
                 }
                 
@@ -549,7 +555,7 @@ extension StatisticReactor {
                 
                 var dic: [String: Int] = [:]
                 for data in outComeDatas {
-                    let category = CategoryType(rawValue: data.selectedCategoryIndex)?.title ?? ""
+                    let category = ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.title ?? ""
                     
                     if dic[category] == nil {
                         dic[category] = Int(data.money)!
@@ -569,15 +575,17 @@ extension StatisticReactor {
                 
                 for data in dayFilterDatas {
                     let purposeDate = dateFormatter.string(from: data.purposeDate)
-                    let emoji = CategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
+                    let emoji = data.transactionType == "수입"
+                    ? InComeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
+                    : ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
                     let money = data.transactionType == "수입" ? data.money : String(-Int(data.money)!)
                     let detailUse = data.purposeText
-                    
+                    let detailDate = data.purposeDate
                     
                     if inOutDatas[purposeDate] == nil {
-                        inOutDatas[purposeDate] = [InOutCellInfo(transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
+                        inOutDatas[purposeDate] = [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
                     } else {
-                        inOutDatas[purposeDate]! += [InOutCellInfo(transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
+                        inOutDatas[purposeDate]! += [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
                     }
                 }
                 
@@ -665,7 +673,7 @@ extension StatisticReactor {
                 
                 var dic: [String: Int] = [:]
                 for data in outComeDatas {
-                    let category = CategoryType(rawValue: data.selectedCategoryIndex)?.title ?? ""
+                    let category = ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.title ?? ""
                     
                     if dic[category] == nil {
                         dic[category] = Int(data.money)!
@@ -685,15 +693,17 @@ extension StatisticReactor {
                 
                 for data in weekOfMonthDbDatas {
                     let purposeDate = dateFormatter.string(from: data.purposeDate)
-                    let emoji = CategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
+                    let emoji = data.transactionType == "수입"
+                    ? InComeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
+                    : ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
                     let money = data.transactionType == "수입" ? data.money : String(-Int(data.money)!)
                     let detailUse = data.purposeText
-                    
+                    let detailDate = data.purposeDate
                     
                     if inOutDatas[purposeDate] == nil {
-                        inOutDatas[purposeDate] = [InOutCellInfo(transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
+                        inOutDatas[purposeDate] = [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
                     } else {
-                        inOutDatas[purposeDate]! += [InOutCellInfo(transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
+                        inOutDatas[purposeDate]! += [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
                     }
                 }
                 
@@ -770,7 +780,7 @@ extension StatisticReactor {
                 
                 var dic: [String: Int] = [:]
                 for data in outComeDatas {
-                    let category = CategoryType(rawValue: data.selectedCategoryIndex)?.title ?? ""
+                    let category = ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.title ?? ""
                     
                     if dic[category] == nil {
                         dic[category] = Int(data.money)!
@@ -790,15 +800,17 @@ extension StatisticReactor {
                 
                 for data in monthFilterDatas {
                     let purposeDate = dateFormatter.string(from: data.purposeDate)
-                    let emoji = CategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
+                    let emoji = data.transactionType == "수입"
+                    ? InComeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
+                    : ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
                     let money = data.transactionType == "수입" ? data.money : String(-Int(data.money)!)
                     let detailUse = data.purposeText
-                    
+                    let detailDate = data.purposeDate
                     
                     if inOutDatas[purposeDate] == nil {
-                        inOutDatas[purposeDate] = [InOutCellInfo(transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
+                        inOutDatas[purposeDate] = [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
                     } else {
-                        inOutDatas[purposeDate]! += [InOutCellInfo(transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
+                        inOutDatas[purposeDate]! += [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
                     }
                 }
                 

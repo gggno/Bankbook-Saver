@@ -7,7 +7,8 @@
 
 import Foundation
 
-struct InOutCellInfo {
+struct InOutCellInfo: Equatable {
+    let id: String
     let transactionType: String
     let emoji: String
     let money: String
