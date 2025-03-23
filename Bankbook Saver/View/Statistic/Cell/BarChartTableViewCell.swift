@@ -23,7 +23,6 @@ class BarChartTableViewCell: UITableViewCell {
     
     lazy var previousSpendLabel: UILabel = {
         let label = UILabel()
-        label.text = "11월에는 19만원 더 썼어요"
         return label
     }()
     
@@ -60,18 +59,20 @@ class BarChartTableViewCell: UITableViewCell {
     }
     
     func setLayout() {
-        previousSpendLabel.snp.makeConstraints { make in
-            make.top.equalTo(self.contentView.snp.top).offset(8)
-            make.centerX.equalTo(self.contentView.snp.centerX)
-            make.leading.equalToSuperview()
-        }
+        self.contentView.backgroundColor = .systemGroupedBackground
         
         barChartView.snp.makeConstraints { make in
-            make.top.equalTo(previousSpendLabel.snp.bottom).offset(20)
-            make.leading.equalToSuperview().offset(20)
-            make.trailing.equalToSuperview().offset(-20)
-            make.height.equalTo(150)
-            make.bottom.equalTo(self.contentView.snp.bottom).offset(-30)
+            make.height.equalTo(200)
+            make.centerX.equalTo(self.contentView.snp.centerX)
+            make.top.equalTo(self.contentView.snp.top).offset(20)
+            make.bottom.equalTo(self.contentView.snp.bottom).offset(-20)
+            make.leading.equalTo(self.contentView.snp.leading).offset(20)
+        }
+        
+        previousSpendLabel.snp.makeConstraints { make in
+            make.top.equalTo(self.barChartView.snp.top)
+            make.centerX.equalTo(self.contentView.snp.centerX)
+            make.leading.equalToSuperview()
         }
     }
     
@@ -81,8 +82,10 @@ class BarChartTableViewCell: UITableViewCell {
         let newHostingController = UIHostingController(rootView: BarChart(barChartDatas: barChartDatas))
         hostingController = newHostingController
         guard let barChart = hostingController?.view else {return}
+        barChart.backgroundColor = .secondarySystemGroupedBackground
         
         self.barChartView.addSubview(barChart)
+        barChart.layer.cornerRadius = 20
         
         barChart.snp.makeConstraints { make in
             make.top.equalTo(previousSpendLabel.snp.bottom).offset(20)

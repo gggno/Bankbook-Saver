@@ -14,14 +14,25 @@ class SearchHomeDataViewController: UIViewController {
     lazy var searchBar: UISearchBar = {
         let searchBar = UISearchBar()
         searchBar.placeholder = "검색"
+        searchBar.inputAccessoryView = toolBar
         searchBar.backgroundImage = UIImage()
         return searchBar
+    }()
+    
+    lazy var toolBar: UIToolbar = {
+        let toolBar = UIToolbar()
+        toolBar.sizeToFit()
+        let doneButton = UIBarButtonItem(title: "완료", style: .done, target: self, action: #selector(dismissKeyboard))
+        let space = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        toolBar.setItems([space, doneButton], animated: false)
+        return toolBar
     }()
     
     lazy var searchHomeDataTableView: UITableView = {
         let tableView = UITableView()
         tableView.separatorStyle = .none
         tableView.register(InOutListTableViewCell.self, forCellReuseIdentifier: "InOutListTableViewCell")
+        tableView.backgroundColor = .systemGroupedBackground
         return tableView
     }()
     
@@ -53,6 +64,7 @@ extension SearchHomeDataViewController {
     func setLayout() {
         print("SearchHomeDataViewController - setLayout() called")
         
+        self.title = "검색"
         self.view.backgroundColor = .systemGroupedBackground
         
         searchBar.snp.makeConstraints { make in
@@ -67,6 +79,11 @@ extension SearchHomeDataViewController {
             make.leading.equalToSuperview()
             make.trailing.equalToSuperview()
         }
+    }
+    
+    // 키보드 내리기
+    @objc func dismissKeyboard() {
+        searchBar.searchTextField.resignFirstResponder()
     }
 }
 
@@ -174,7 +191,12 @@ extension SearchHomeDataViewController: UITableViewDataSource {
             
             if let inOutCell = reactor?.currentState.inOutDatas[key] {
                 cell.emojiLabel.text = inOutCell[indexPath.row].emoji
-                cell.moneyLabel.text = inOutCell[indexPath.row].money
+                cell.moneyLabel.text = (Int(inOutCell[indexPath.row].money)?.withComma ?? "0") + "원"
+                if Int(inOutCell[indexPath.row].money)! >= 0 {
+                    cell.moneyLabel.textColor = .systemBlue
+                } else {
+                    cell.moneyLabel.textColor = .systemRed
+                }
                 cell.detailUseLabel.text = inOutCell[indexPath.row].detailUse
             }
         }
@@ -205,6 +227,7 @@ extension SearchHomeDataViewController: UITableViewDataSource {
                let selectedIndex = searchedDatas.firstIndex(where: { $0._id.stringValue == inOutCell[indexPath.row].id }) {
                 
                 let addVC = AddTransactionViewController()
+                addVC.title = "거래 내역 수정하기"
                 addVC.transactionId = searchedDatas[selectedIndex]._id.stringValue
                 
                 if searchedDatas[selectedIndex].transactionType == "지출" {
@@ -219,9 +242,9 @@ extension SearchHomeDataViewController: UITableViewDataSource {
                 addVC.segmentControl.selectedSegmentIndex = searchedDatas[selectedIndex].transactionType == "지출" ? 0 : 1
                 // 머니 텍스트
                 if searchedDatas[selectedIndex].transactionType == "지출" {
-                    addVC.expenseView.moneyInputFieldView.textField.text = searchedDatas[selectedIndex].money
+                    addVC.expenseView.moneyInputFieldView.textField.text = Int(searchedDatas[selectedIndex].money)?.withComma
                 } else {
-                    addVC.inComeView.moneyInputFieldView.textField.text = searchedDatas[selectedIndex].money
+                    addVC.inComeView.moneyInputFieldView.textField.text = Int(searchedDatas[selectedIndex].money)?.withComma
                 }
                 
                 // 지출처/수입처
@@ -263,6 +286,7 @@ extension SearchHomeDataViewController: UITableViewDataSource {
                     addVC.inComeView.memoTextField.text = searchedDatas[selectedIndex].memoText
                 }
                 
+                addVC.hidesBottomBarWhenPushed = true
                 self.navigationController?.pushViewController(addVC, animated: true)
             }
         }

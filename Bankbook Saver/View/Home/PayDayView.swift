@@ -25,6 +25,7 @@ class PayDayView: UIView {
     lazy var payDayImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(systemName: "chevron.right")
+        imageView.tintColor = .label
         return imageView
     }()
     

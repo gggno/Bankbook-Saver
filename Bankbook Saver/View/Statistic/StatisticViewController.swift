@@ -34,24 +34,6 @@ class StatisticViewController: UIViewController, View {
         return tableView
     }()
     
-    lazy var graphView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .systemBlue
-        return view
-    }()
-    
-    lazy var categoryView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .lightGray
-        return view
-    }()
-    
-    lazy var inOutView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .red
-        return view
-    }()
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -154,7 +136,10 @@ extension StatisticViewController {
         
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(customView: segmentControl)
         
-        self.view.backgroundColor = .systemGroupedBackground
+        self.navigationController?.navigationBar.tintColor = .label
+        self.navigationController?.navigationBar.topItem?.title = ""
+        
+        statisticTableView.backgroundColor = .systemGroupedBackground
         
         statisticTableView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -217,15 +202,19 @@ extension StatisticViewController: UITableViewDataSource {
         case .stats:
             let cell = tableView.dequeueReusableCell(withIdentifier: "StatsTableViewCell", for: indexPath) as! StatsTableViewCell
             
+            cell.selectionStyle = .none
+
             cell.dateLabel.text = reactor?.currentState.dateText ?? ""
-            cell.withdrawMoneyLabel.text = reactor?.currentState.outComeMoneyText ?? ""
-            cell.inComeMoneyLabel.text = reactor?.currentState.inComeMoneyText ?? "''"
+            cell.withdrawMoneyLabel.text = (Int(reactor?.currentState.outComeMoneyText ?? "0")?.withComma ?? "0") + "원"
+            cell.inComeMoneyLabel.text = (Int(reactor?.currentState.inComeMoneyText ?? "0")?.withComma ?? "0") + "원"
             
             return cell
             
         case .barChart:
             let cell = tableView.dequeueReusableCell(withIdentifier: "BarChartTableViewCell", for: indexPath) as! BarChartTableViewCell
             
+            cell.selectionStyle = .none
+
             cell.previousSpendLabel.text = reactor?.currentState.lastSixMonthText ?? ""
             cell.barChartDatas = reactor?.currentState.barChartDatas ?? []
 
@@ -234,6 +223,8 @@ extension StatisticViewController: UITableViewDataSource {
         case .pieChart:
             let cell = tableView.dequeueReusableCell(withIdentifier: "PieChartTableViewCell", for: indexPath) as! PieChartTableViewCell
             
+            cell.selectionStyle = .none
+
             cell.pieChartDatas = reactor?.currentState.pieChartDatas ?? []
 
             return cell
@@ -241,6 +232,8 @@ extension StatisticViewController: UITableViewDataSource {
         case .inputList:
             let cell = tableView.dequeueReusableCell(withIdentifier: "InOutListTableViewCell", for: indexPath) as! InOutListTableViewCell
             
+            cell.selectionStyle = .none
+
             if let headers = reactor?.currentState.inOutDatas.keys.sorted(by: { lhs, rhs in
                 let leftDay = Int(lhs.components(separatedBy: "일").first ?? "0") ?? 0
                 let rightDay = Int(rhs.components(separatedBy: "일").first ?? "0") ?? 0
@@ -249,7 +242,12 @@ extension StatisticViewController: UITableViewDataSource {
                 let key = headers[indexPath.section - 3]
                 if let inOutCell = reactor?.currentState.inOutDatas[key] {
                     cell.emojiLabel.text = inOutCell[indexPath.row].emoji
-                    cell.moneyLabel.text = inOutCell[indexPath.row].money
+                    cell.moneyLabel.text = (Int(inOutCell[indexPath.row].money)?.withComma ?? "0") + "원"
+                    if Int(inOutCell[indexPath.row].money)! >= 0 {
+                        cell.moneyLabel.textColor = .systemBlue
+                    } else {
+                        cell.moneyLabel.textColor = .systemRed
+                    }
                     cell.detailUseLabel.text = inOutCell[indexPath.row].detailUse
                 }
             }

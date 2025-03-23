@@ -21,7 +21,7 @@ class PieChartTableViewCell: UITableViewCell {
     
     lazy var pieChartView: UIView = {
         let view = UIView()
-        view.backgroundColor = .systemRed
+        view.layer.cornerRadius = 20
         return view
     }()
     
@@ -52,12 +52,14 @@ class PieChartTableViewCell: UITableViewCell {
     }
     
     func setLayout() {
+        self.contentView.backgroundColor = .systemGroupedBackground
+        
         pieChartView.snp.makeConstraints { make in
             make.height.equalTo(250)
             make.centerX.equalTo(self.contentView.snp.centerX)
-            make.top.equalTo(self.contentView.snp.top)
-            make.leading.equalTo(20)
-            make.bottom.equalTo(self.contentView.snp.bottom).offset(-30)
+            make.top.equalTo(self.contentView.snp.top).offset(20)
+            make.bottom.equalTo(self.contentView.snp.bottom).offset(-20)
+            make.leading.equalTo(self.contentView.snp.leading).offset(20)
         }
     }
     
@@ -67,7 +69,8 @@ class PieChartTableViewCell: UITableViewCell {
         let newHostingController = UIHostingController(rootView: PieChart(pieChartDatas: pieChartDatas))
         hostingController = newHostingController
         guard let pieChart = hostingController?.view else {return}
-        
+        pieChart.layer.cornerRadius = 20
+        pieChart.backgroundColor = .secondarySystemGroupedBackground
         self.pieChartView.addSubview(pieChart)
         
         pieChart.snp.makeConstraints { make in

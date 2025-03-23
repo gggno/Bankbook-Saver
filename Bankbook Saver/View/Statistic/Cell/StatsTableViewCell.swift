@@ -27,7 +27,7 @@ class StatsTableViewCell: UITableViewCell {
         button.setImage(UIImage(systemName: "chevron.left"), for: .normal)
         button.contentEdgeInsets = UIEdgeInsets(top: 3, left: 15, bottom: 3, right: 15)
         button.layer.cornerRadius = 8
-        button.backgroundColor = .systemBackground  // 수정 필요
+        button.backgroundColor = .secondarySystemGroupedBackground  // 수정 필요
         button.tintColor = .label
         return button
     }()
@@ -37,7 +37,7 @@ class StatsTableViewCell: UITableViewCell {
         button.setImage(UIImage(systemName: "chevron.right"), for: .normal)
         button.contentEdgeInsets = UIEdgeInsets(top: 3, left: 15, bottom: 3, right: 15)
         button.layer.cornerRadius = 8
-        button.backgroundColor = .systemBackground  // 수정 필요
+        button.backgroundColor = .secondarySystemGroupedBackground
         button.tintColor = .label
         return button
     }()
@@ -45,6 +45,7 @@ class StatsTableViewCell: UITableViewCell {
     
     lazy var inComeMoneyLabel: UILabel = {
         let label = UILabel()
+        label.font = .systemFont(ofSize: 18, weight: .medium)
         return label
     }()
     
@@ -56,7 +57,6 @@ class StatsTableViewCell: UITableViewCell {
     
     lazy var inComeStackView: UIStackView = {
         let stackView = UIStackView()
-        stackView.backgroundColor = .green
         stackView.axis = .horizontal
         stackView.distribution = .equalSpacing
         return stackView
@@ -64,18 +64,18 @@ class StatsTableViewCell: UITableViewCell {
     
     lazy var withdrawMoneyLabel: UILabel = {
         let label = UILabel()
+        label.font = .systemFont(ofSize: 18, weight: .medium)
         return label
     }()
     
     lazy var withdrawTextLabel: UILabel = {
         let label = UILabel()
-        label.text = "총 수출"
+        label.text = "총 지출"
         return label
     }()
     
     lazy var withdrawStackView: UIStackView = {
         let stackView = UIStackView()
-        stackView.backgroundColor = .cyan
         stackView.axis = .horizontal
         stackView.distribution = .equalSpacing
         return stackView
@@ -113,24 +113,26 @@ class StatsTableViewCell: UITableViewCell {
         self.contentView.addSubview(leftMoveButton)
         self.contentView.addSubview(rightMoveButton)
         
-        inComeStackView.addArrangedSubview(inComeMoneyLabel)
         inComeStackView.addArrangedSubview(inComeTextLabel)
+        inComeStackView.addArrangedSubview(inComeMoneyLabel)
         self.contentView.addSubview(inComeStackView)
         
-        withdrawStackView.addArrangedSubview(withdrawMoneyLabel)
         withdrawStackView.addArrangedSubview(withdrawTextLabel)
+        withdrawStackView.addArrangedSubview(withdrawMoneyLabel)
         self.contentView.addSubview(withdrawStackView)
     }
     
     func setLayout() {
+        self.contentView.backgroundColor = .systemGroupedBackground
+        
         dateLabel.snp.makeConstraints { make in
-            make.top.equalTo(self.contentView.safeAreaLayoutGuide).offset(30)
+            make.top.equalTo(self.contentView.safeAreaLayoutGuide).offset(20)
             make.leading.equalTo(self.contentView).offset(20)
         }
         
         leftMoveButton.snp.makeConstraints { make in
             make.centerY.equalTo(self.dateLabel.snp.centerY)
-            make.trailing.equalTo(self.rightMoveButton.snp.leading).offset(-5)
+            make.trailing.equalTo(self.rightMoveButton.snp.leading).offset(-8)
         }
         
         rightMoveButton.snp.makeConstraints { make in
@@ -140,15 +142,15 @@ class StatsTableViewCell: UITableViewCell {
         
         inComeStackView.snp.makeConstraints { make in
             make.centerX.equalTo(self.contentView)
-            make.top.equalTo(dateLabel.snp.bottom).offset(30)
+            make.top.equalTo(dateLabel.snp.bottom).offset(25)
             make.leading.equalTo(self.contentView).offset(20)
         }
         
         withdrawStackView.snp.makeConstraints { make in
             make.centerX.equalTo(self.contentView)
-            make.top.equalTo(inComeStackView.snp.bottom).offset(30)
+            make.top.equalTo(inComeStackView.snp.bottom).offset(10)
             make.leading.equalTo(self.contentView).offset(20)
-            make.bottom.equalTo(self.contentView.snp.bottom).offset(-30)
+            make.bottom.equalTo(self.contentView.snp.bottom).offset(-20)
         }
     }
 

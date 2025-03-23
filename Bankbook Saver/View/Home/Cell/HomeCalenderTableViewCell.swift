@@ -26,18 +26,19 @@ class HomeCalenderTableViewCell: UITableViewCell {
     lazy var lastMonthButton: UIButton = {
         let button = UIButton()
         button.setImage(UIImage(systemName: "arrowtriangle.left.fill"), for: .normal)
+        button.tintColor = .label
         return button
     }()
     
     lazy var monthLabel: UILabel = {
         let label = UILabel()
-        label.text = "2월"
         return label
     }()
     
     lazy var nextMonthButton: UIButton = {
         let button = UIButton()
         button.setImage(UIImage(systemName: "arrowtriangle.right.fill"), for: .normal)
+        button.tintColor = .label
         return button
     }()
     
@@ -47,6 +48,7 @@ class HomeCalenderTableViewCell: UITableViewCell {
         stackView.axis = .horizontal
         stackView.distribution = .fillEqually
         stackView.spacing = 20
+        stackView.backgroundColor = .systemGroupedBackground
         
         return stackView
     }()
@@ -57,6 +59,7 @@ class HomeCalenderTableViewCell: UITableViewCell {
         stackView.axis = .horizontal
         stackView.distribution = .fillEqually
         stackView.spacing = 10
+        stackView.backgroundColor = .systemGroupedBackground
         
         return stackView
     }()
@@ -116,6 +119,8 @@ class HomeCalenderTableViewCell: UITableViewCell {
     }
     
     func addSubViews() {
+        self.contentView.backgroundColor = .systemGroupedBackground
+        
         self.contentView.addSubview(monthStackView)
         monthStackView.addArrangedSubview(lastMonthButton)
         monthStackView.addArrangedSubview(monthLabel)
@@ -125,7 +130,7 @@ class HomeCalenderTableViewCell: UITableViewCell {
         
         for day in ["일", "월", "화", "수", "목", "금", "토"] {
             let label = UILabel()
-            label.backgroundColor = .brown
+//            label.backgroundColor = .brown
             label.text = day
             label.textAlignment = .center
             
@@ -136,7 +141,7 @@ class HomeCalenderTableViewCell: UITableViewCell {
     }
     
     func setLayout() {
-        calendarCollectionView.backgroundColor = .green
+        calendarCollectionView.backgroundColor = .systemGroupedBackground
         
         monthStackView.snp.makeConstraints { make in
             make.top.equalToSuperview()
@@ -182,9 +187,11 @@ extension HomeCalenderTableViewCell: UICollectionViewDataSource {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "HomeCalenderCollectionViewCell", for: indexPath) as! HomeCalenderCollectionViewCell
         cell.dateLabel.text = dayValue[indexPath.row]
         
-        cell.inLabel.text = String(inComeMoneys.value[indexPath.row]) != "0" ? String(inComeMoneys.value[indexPath.row]) : ""
-        cell.outLabel.text = String(outComeMoneys.value[indexPath.row]) != "0" ? String(outComeMoneys.value[indexPath.row]) : ""
-        cell.outLabel.text = String(outComeMoneys.value[indexPath.row]) != "0" ? String(outComeMoneys.value[indexPath.row]) : ""
+        cell.inLabel.text = String(inComeMoneys.value[indexPath.row]) != "0" ? 
+        inComeMoneys.value[indexPath.row].withComma : ""
+        
+        cell.outLabel.text = String(outComeMoneys.value[indexPath.row]) != "0" ?
+        outComeMoneys.value[indexPath.row].withComma : ""
         
         return cell
     }

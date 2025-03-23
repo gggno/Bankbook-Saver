@@ -50,6 +50,9 @@ extension MypageViewController {
         let leftItem = UIBarButtonItem(customView: largeTitleLabel)
         self.navigationItem.leftBarButtonItem = leftItem
         
+        self.navigationController?.navigationBar.tintColor = .label
+        self.navigationController?.navigationBar.topItem?.title = ""
+        
         myPageTableView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
@@ -122,7 +125,8 @@ extension MypageViewController: UITableViewDataSource {
                 
                 let darkLightReactor = DarkLightReactor(myPageReactor: myPageReactor)
                 let darkLightSettingVC = DarkLightSettingViewController(reactor: darkLightReactor)
-
+                
+                darkLightSettingVC.hidesBottomBarWhenPushed = true
                 self.navigationController?.pushViewController(darkLightSettingVC, animated: true)
             
             default:
@@ -133,10 +137,12 @@ extension MypageViewController: UITableViewDataSource {
             switch notiRowType {
             case .notiSetting:
                 let notiSettingVC = NotiSettingViewController()
+                notiSettingVC.hidesBottomBarWhenPushed = true
                 self.navigationController?.pushViewController(notiSettingVC, animated: true)
            
             case .savingNoti:
                 let notiSettingVC = NotiSettingViewController()
+                notiSettingVC.hidesBottomBarWhenPushed = true
                 self.navigationController?.pushViewController(notiSettingVC, animated: true)
             
             default:

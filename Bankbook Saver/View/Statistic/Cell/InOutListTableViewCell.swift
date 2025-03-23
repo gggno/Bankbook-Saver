@@ -31,6 +31,7 @@ class InOutListTableViewCell: UITableViewCell {
     
     lazy var inOutView: UIView = {
         let view = UIView()
+//        view.backgroundColor = .systemYellow
         return view
     }()
 
@@ -55,7 +56,7 @@ class InOutListTableViewCell: UITableViewCell {
 
         // Configure the view for the selected state
     }
-    
+        
     func addSubViews() {
         self.inOutView.addSubview(emojiLabel)
         
@@ -67,7 +68,7 @@ class InOutListTableViewCell: UITableViewCell {
     }
     
     func setLayout() {
-        self.emojiLabel.backgroundColor = .yellow
+        self.contentView.backgroundColor = .secondarySystemGroupedBackground
         
         emojiLabel.snp.makeConstraints { make in
             make.top.equalToSuperview()
@@ -76,26 +77,22 @@ class InOutListTableViewCell: UITableViewCell {
             make.size.equalTo(50)
         }
         
-        moneyLabel.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
-            make.leading.equalTo(emojiLabel.snp.trailing).offset(10)
-            
-            make.top.equalToSuperview()
+        detailUseLabel.snp.makeConstraints { make in
+            make.centerY.equalToSuperview()
+            make.leading.equalTo(emojiLabel.snp.trailing).offset(20)
         }
         
-        detailUseLabel.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
-            make.leading.equalTo(emojiLabel.snp.trailing).offset(10)
-            
-            make.top.equalTo(moneyLabel.snp.bottom).offset(8)
+        moneyLabel.snp.makeConstraints { make in
+            make.centerY.equalToSuperview()
+            make.trailing.equalToSuperview().offset(-8)
         }
         
         inOutView.snp.makeConstraints { make in
             make.height.equalTo(50)
-            make.top.equalTo(self.contentView.snp.top).offset(8)
-            make.bottom.equalTo(self.contentView.snp.bottom).offset(-8)
-            make.leading.equalTo(self.contentView.snp.leading).offset(8)
-            make.trailing.equalTo(self.contentView.snp.trailing).offset(8)
+            make.top.equalTo(self.contentView.snp.top)
+            make.bottom.equalTo(self.contentView.snp.bottom)
+            make.leading.equalTo(self.contentView.snp.leading).offset(20)
+            make.trailing.equalTo(self.contentView.snp.trailing).offset(-20)
         }
     }
 

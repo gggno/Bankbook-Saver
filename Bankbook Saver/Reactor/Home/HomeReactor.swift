@@ -99,7 +99,8 @@ extension HomeReactor {
                 let emoji = data.transactionType == "수입"
                 ? InComeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
                 : ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
-                let money = data.transactionType == "수입" ? data.money : String(-Int(data.money)!)
+                
+                let money = data.transactionType == "수입" ? data.money : "-\(data.money)"
                 let detailUse = data.purposeText
                 
                 if filterInOutDatas[purposeDate] == nil {

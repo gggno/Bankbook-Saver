@@ -19,7 +19,6 @@ class InComeView: UIView {
     
     lazy var moneyInputFieldView: InputFieldView = {
         let view = InputFieldView(title: "금액을 입력하세요", placeholder: "금액을 입력하세요", keyboardType: .numberPad, unitText: "원")
-        view.backgroundColor = .blue
         return view
     }()
     
@@ -30,7 +29,6 @@ class InComeView: UIView {
     
     lazy var payDayView: PayDayView = {
         let view = PayDayView(payTypeText: "수입일시", dateText: "2월 5일 16:39")
-        view.backgroundColor = .red
         view.isUserInteractionEnabled = true
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(payDayViewTap))
@@ -89,7 +87,8 @@ class InComeView: UIView {
         layout.minimumLineSpacing = 30
         layout.minimumInteritemSpacing = 10
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        
+        collectionView.layer.cornerRadius = 10
+        collectionView.backgroundColor = .secondarySystemGroupedBackground
         collectionView.register(CategoryCollectionViewCell.self, forCellWithReuseIdentifier: "CategoryCollectionViewCell")
         
         return collectionView
@@ -104,14 +103,23 @@ class InComeView: UIView {
     
     lazy var memoTextField: UITextField = {
         let textField = UITextField()
+        textField.inputAccessoryView = memoToolbar
         textField.placeholder = "메모를 입력하세요"
-        textField.backgroundColor = .brown
         return textField
+    }()
+    
+    lazy var memoToolbar: UIToolbar = {
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        let doneButton = UIBarButtonItem(title: "완료", style: .done, target: self, action: #selector(memoDismissKeyboard))
+        let space = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        toolbar.setItems([space, doneButton], animated: false)
+        return toolbar
     }()
     
     lazy var memoUnderlineView: UIView = {
         let view = UIView()
-        view.backgroundColor = .black
+        view.backgroundColor = .label
         return view
     }()
     
@@ -209,7 +217,7 @@ class InComeView: UIView {
         }
         
         memoTextField.snp.makeConstraints { make in
-//            make.height.equalTo(50)
+            make.height.equalTo(45)
             make.top.equalTo(memoLabel.snp.bottom)
             make.leading.equalToSuperview().offset(20)
             make.trailing.equalToSuperview().offset(-20)
@@ -229,7 +237,7 @@ class InComeView: UIView {
             make.leading.equalTo(20)
             make.trailing.equalToSuperview().offset(-20)
             
-//            make.bottom.equalToSuperview()   // 스크롤뷰 높이 때문에 마지막 UI가 바텀 앵커 걸어야함
+            // make.bottom.equalToSuperview()   // 스크롤뷰 높이 때문에 마지막 UI가 바텀 앵커 걸어야함(수입 뷰는 스크롤 비활 땜에 주석)
         }
         
     }
@@ -244,10 +252,15 @@ class InComeView: UIView {
         
     }
     
-    // 데이트픽커 사라지기
+    // 데이트픽커 내리기
     @objc func dismissPicker() {
         hiddenTextField.resignFirstResponder()
         incomeSelectedDate.onNext(datePicker.date)
+    }
+    
+    // 메모 키보드 내리기
+    @objc func memoDismissKeyboard() {
+        memoTextField.resignFirstResponder()
     }
     
     @objc func switchToggle(_ sender: UISwitch) {

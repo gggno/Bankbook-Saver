@@ -65,6 +65,7 @@ extension AddTransactionReactor {
             return .just(.updateTransactionTypeMutation(type))
         
         case .updateMoneyTextAction(let text):
+            print("updateMoneyTextAction: \(text)")
             return .just(.updateMoneyTextMutation(text))
         
         case .updatePurposeTextAction(let text):
@@ -118,7 +119,7 @@ extension AddTransactionReactor {
             
         case .updateMoneyTextMutation(let text):
             print(text)
-            newState.moneyText = text
+            newState.moneyText = Int(text)?.withComma ?? text
         
         case .updatePurposeTextMutation(let text):
             print(text)
@@ -150,7 +151,7 @@ extension AddTransactionReactor {
                 let homeData = HomeDataEntity()
                 
                 homeData.transactionType = currentState.transactionType
-                homeData.money = currentState.moneyText
+                homeData.money = String(currentState.moneyText.withOutComma)
                 homeData.purposeText = currentState.purposeText
                 homeData.purposeDate = currentState.purposeDate
                 homeData.repeatState = currentState.repeatState

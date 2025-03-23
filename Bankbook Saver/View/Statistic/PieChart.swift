@@ -17,6 +17,7 @@ struct PieChart: View {
             SectorMark(angle: .value("금액", chartData.amount))
                 .foregroundStyle(by: .value("카테고리", chartData.category))
         }
+        .padding(20)
     }
 }
 

@@ -271,7 +271,7 @@ extension StatisticReactor {
                     let barDateFormatter = DateFormatter()
                     barDateFormatter.dateFormat = "MM.dd"
                     
-                    barChartDatas.append(BarChartInfo(month: "\(barDateFormatter.string(from: startBarWeekDay)) ~ \(barDateFormatter.string(from: endBarWeekDay))", spendMoney: barChartWeekOfMonthOutMoney))
+                    barChartDatas.append(BarChartInfo(month: "\(barDateFormatter.string(from: startBarWeekDay)) ~\n\(barDateFormatter.string(from: endBarWeekDay))", spendMoney: barChartWeekOfMonthOutMoney))
                 }
                 
                 // 원 그래프(카테고리 별 지출)
@@ -354,12 +354,15 @@ extension StatisticReactor {
                 let lastMonthOutMoney = lastMonthFliterDatas
                     .filter {$0.transactionType == "지출"}
                     .reduce(0) { $0 + (Int($1.money) ?? 0) }
+                
                 if thisMonthOutMoney > lastMonthOutMoney {          // 이번달에 더 많이 지출했을 때
-                    lastCompareText = "이번달에 \(thisMonthOutMoney - lastMonthOutMoney)원 더 썼어요"
+                    let money = (thisMonthOutMoney - lastMonthOutMoney).withComma
+                    lastCompareText = "이번 달에 \(money)원 더 썼어요"
                 } else if thisMonthOutMoney < lastMonthOutMoney {   // 지난달에 더 많이 지출했을 때
-                    lastCompareText = "지난달에 \(lastMonthOutMoney - thisMonthOutMoney)원 더 썼어요"
+                    let money = (lastMonthOutMoney - thisMonthOutMoney).withComma
+                    lastCompareText = "지난 달에 \(money)원 더 썼어요"
                 } else {                                            // 이번달과 지난달 지출이 같을 때
-                    lastCompareText = "지난달 지출과 같아요"
+                    lastCompareText = "지난 달 지출과 같아요"
                 }
                 
                 // 막대 그래프(최근 6개월 지출)
@@ -389,9 +392,9 @@ extension StatisticReactor {
                     let category = ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.title ?? ""
                     
                     if dic[category] == nil {
-                        dic[category] = Int(data.money)!
+                        dic[category] = data.money.withOutComma
                     } else {
-                        dic[category]! += Int(data.money)!
+                        dic[category]! += data.money.withOutComma
                     }
                 }
                 
@@ -409,7 +412,7 @@ extension StatisticReactor {
                     let emoji = data.transactionType == "수입"
                     ? InComeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
                     : ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
-                    let money = data.transactionType == "수입" ? data.money : String(-Int(data.money)!)
+                    let money = data.transactionType == "수입" ? data.money : "-\(data.money)"
                     let detailUse = data.purposeText
                     let detailDate = data.purposeDate
                     
@@ -496,7 +499,7 @@ extension StatisticReactor {
                     .reduce(0) { $0 + (Int($1.money) ?? 0) })
                 
                 // 어제와 지출 비교
-                let lastDate = calendar.date(byAdding: .day, value: -1, to: today)!
+                let lastDate = calendar.date(byAdding: .day, value: -1, to: selectedDate)!
                 
                 let lastYear = calendar.component(.year, from: lastDate)
                 let lastMonth = calendar.component(.month, from: lastDate)
@@ -730,14 +733,15 @@ extension StatisticReactor {
                 inComeMoneyText = String(monthFilterDatas
                     .filter { $0.transactionType == "수입" }
                     .reduce(0) { $0 + (Int($1.money) ?? 0) })
-                
+                // MARK: FIXXING
                 // 지난달과 지출 비교
-                let lastDate = calendar.date(byAdding: .month, value: -1, to: today)!
+                let lastDate = calendar.date(byAdding: .month, value: -1, to: selectedDate)!
                 let lastYear = calendar.component(.year, from: lastDate)
                 let lastMonth = calendar.component(.month, from: lastDate)
                 let lastMonthFliterDatas = allDbDatas.filter {
                     let filterYear = calendar.component(.year, from: $0.purposeDate)
                     let filterMonth = calendar.component(.month, from: $0.purposeDate)
+                    
                     return filterYear == lastYear && filterMonth == lastMonth
                 }
                 
@@ -748,6 +752,7 @@ extension StatisticReactor {
                 let lastMonthOutMoney = lastMonthFliterDatas
                     .filter {$0.transactionType == "지출"}
                     .reduce(0) { $0 + (Int($1.money) ?? 0) }
+                
                 if thisMonthOutMoney > lastMonthOutMoney {          // 이번달에 더 많이 지출했을 때
                     lastCompareText = "이번달에 \(thisMonthOutMoney - lastMonthOutMoney)원 더 썼어요"
                 } else if thisMonthOutMoney < lastMonthOutMoney {   // 지난달에 더 많이 지출했을 때

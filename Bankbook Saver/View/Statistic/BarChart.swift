@@ -18,6 +18,21 @@ struct BarChart: View {
                     y: .value("spendMoney", barChartData.spendMoney)
             )
         }
+        .padding(20)
+        .chartXAxis {   // 백그라운드 격자 선 제거
+            AxisMarks() { _ in
+                AxisValueLabel()
+                AxisTick().foregroundStyle(.clear)
+                AxisGridLine().foregroundStyle(.clear)
+            }
+        }
+        .chartYAxis {   // 백그라운드 격자 선 제거
+            AxisMarks() { _ in
+                AxisValueLabel()
+                AxisTick().foregroundStyle(.clear)
+                AxisGridLine().foregroundStyle(.clear)
+            }
+        }
     }
 }
 

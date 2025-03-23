@@ -103,10 +103,6 @@ extension NotiSettingViewController: UITableViewDataSource {
             break
         }
         
-        cell.titleLabel.text = reactor?.currentState.cellInfo[indexPath.row].title
-        cell.subTitleLabel.text = reactor?.currentState.cellInfo[indexPath.row].subTitle
-        cell.notiSwitch.isOn = reactor?.currentState.cellInfo[indexPath.row].state ?? false
-        
         return cell
     }
     

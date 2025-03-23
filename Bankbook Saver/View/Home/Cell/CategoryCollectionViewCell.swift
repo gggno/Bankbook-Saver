@@ -13,7 +13,6 @@ class CategoryCollectionViewCell: UICollectionViewCell {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 30)
         label.textAlignment = .center
-//        label.backgroundColor = .red
         return label
     }()
     
@@ -21,7 +20,6 @@ class CategoryCollectionViewCell: UICollectionViewCell {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 10)
         label.textAlignment = .center
-//        label.backgroundColor = .blue
         return label
     }()
     
@@ -45,6 +43,9 @@ class CategoryCollectionViewCell: UICollectionViewCell {
     }
     
     func addSubViews() {
+        self.layer.cornerRadius = 10
+        self.layer.masksToBounds = true
+        
         self.contentView.addSubview(cagegoryStackView)
         
         cagegoryStackView.addArrangedSubview(emijiLabel)

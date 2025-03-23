@@ -15,10 +15,7 @@ class HomeCalenderCollectionViewCell: UICollectionViewCell {
     
     lazy var dateLabel: UILabel = {
         let label = UILabel()
-        label.backgroundColor = .red
         label.textAlignment = .center
-        
-        label.text = "13"
         return label
     }()
     
@@ -26,7 +23,7 @@ class HomeCalenderCollectionViewCell: UICollectionViewCell {
         let label = UILabel()
         label.font = .systemFont(ofSize: 8)
         label.textAlignment = .center
-        label.textColor = .blue
+        label.textColor = .systemBlue
         return label
     }()
     
@@ -34,7 +31,7 @@ class HomeCalenderCollectionViewCell: UICollectionViewCell {
         let label = UILabel()
         label.font = .systemFont(ofSize: 8)
         label.textAlignment = .center
-        label.textColor = .red
+        label.textColor = .systemRed
         return label
     }()
     
@@ -56,8 +53,6 @@ class HomeCalenderCollectionViewCell: UICollectionViewCell {
     }
     
     func setLayout() {
-        self.contentView.layer.borderWidth = 1
-        self.contentView.layer.borderColor = UIColor.black.cgColor
         dateLabel.snp.makeConstraints { make in
             make.centerX.equalTo(self.contentView.snp.centerX)
             make.top.equalTo(self.contentView.snp.top).offset(2)

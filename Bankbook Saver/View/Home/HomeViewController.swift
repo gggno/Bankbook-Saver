@@ -15,9 +15,17 @@ class HomeViewController: UIViewController {
     
     lazy var floatingButton: UIButton = {
         let button = UIButton()
-        button.setTitle("+", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = .systemBlue
+        button.backgroundColor = .label
+        
+        button.layer.cornerRadius = 30
+        
+        button.setImage(UIImage(systemName: "plus"), for: .normal)
+        button.imageView?.contentMode = .scaleAspectFit // 이미지 크기 조정
+        button.imageView?.tintColor = .systemBackground
+        // 이미지와 텍스트가 겹치는 문제 방지 (이미지만 사용하므로 titleEdgeInsets는 따로 안 설정)
+        button.contentVerticalAlignment = .center
+        button.contentHorizontalAlignment = .center
+
         return button
     }()
     
@@ -52,7 +60,7 @@ class HomeViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         print("HomeViewController - viewWillAppear() called")
-
+        
         // 처음에 날짜 가져오기(초기값 0)
         self.reactor?.action.onNext(.fetchDataAction(count: 0))
         homeTableView.reloadData()
@@ -63,6 +71,7 @@ class HomeViewController: UIViewController {
         print("HomeViewController - searchHomeData() called")
         
         let searchHomeDataVC = SearchHomeDataViewController()
+        searchHomeDataVC.hidesBottomBarWhenPushed = true
         self.navigationController?.pushViewController(searchHomeDataVC, animated: true)
     }
 }
@@ -89,13 +98,16 @@ extension HomeViewController {
         
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "magnifyingglass"), style: .plain, target: self, action: #selector(searchHomeData))
         
+        self.navigationController?.navigationBar.tintColor = .label
+        self.navigationController?.navigationBar.topItem?.title = ""
+        
         self.view.backgroundColor = .systemGroupedBackground
         
         // 플로팅 버튼
         floatingButton.snp.makeConstraints { make in
-            make.size.equalTo(50)
-            make.trailing.equalTo(self.view).offset(-15)
-            make.bottom.equalTo(self.view.safeAreaLayoutGuide).offset(-15)
+            make.size.equalTo(60)
+            make.trailing.equalTo(self.view).offset(-20)
+            make.bottom.equalTo(self.view.safeAreaLayoutGuide).offset(-20)
         }
         
         homeTableView.snp.makeConstraints { make in
@@ -106,8 +118,8 @@ extension HomeViewController {
 
 extension HomeViewController: View {
     func bind(reactor: HomeReactor) {
-//        // 처음에 날짜 가져오기(초기값 0)
-//        reactor.action.onNext(.fetchDataAction(count: 0))
+        //        // 처음에 날짜 가져오기(초기값 0)
+        //        reactor.action.onNext(.fetchDataAction(count: 0))
         
         // 이전 달 또는 다음 달 날짜 가져오기
         homeTableView.rx.willDisplayCell
@@ -140,10 +152,12 @@ extension HomeViewController: View {
         floatingButton.rx.tap
             .subscribe { _ in
                 let addVC = AddTransactionViewController()
+                addVC.title = "거래 내역 추가하기"
                 
                 addVC.expenseView.isHidden = false
                 addVC.inComeView.isHidden = true
                 
+                addVC.hidesBottomBarWhenPushed = true
                 self.navigationController?.pushViewController(addVC, animated: true)
             }
             .disposed(by: disposeBag)
@@ -192,7 +206,7 @@ extension HomeViewController: UITableViewDataSource {
             }
             
             return 0
-                
+            
         default:
             return 0
         }
@@ -242,11 +256,16 @@ extension HomeViewController: UITableViewDataSource {
                 let key = headers[indexPath.section - 1]
                 if let inOutCell = reactor?.currentState.inOutData[key] {
                     cell.emojiLabel.text = inOutCell[indexPath.row].emoji
-                    cell.moneyLabel.text = inOutCell[indexPath.row].money
+                    cell.moneyLabel.text = (Int(inOutCell[indexPath.row].money)?.withComma ?? "0") + "원"
+                    if Int(inOutCell[indexPath.row].money)! >= 0 {
+                        cell.moneyLabel.textColor = .systemBlue
+                    } else {
+                        cell.moneyLabel.textColor = .systemRed
+                    }
                     cell.detailUseLabel.text = inOutCell[indexPath.row].detailUse
                 }
             }
-             
+            
             return cell
         }
     }
@@ -270,6 +289,7 @@ extension HomeViewController: UITableViewDataSource {
                    let selectedIndex = thisMonthDatas.firstIndex(where: { $0._id.stringValue == inOutCell[indexPath.row].id }) {
                     
                     let addVC = AddTransactionViewController()
+                    addVC.title = "거래 내역 수정하기"
                     addVC.transactionId = thisMonthDatas[selectedIndex]._id.stringValue
                     
                     if thisMonthDatas[selectedIndex].transactionType == "지출" {
@@ -284,9 +304,10 @@ extension HomeViewController: UITableViewDataSource {
                     addVC.segmentControl.selectedSegmentIndex = thisMonthDatas[selectedIndex].transactionType == "지출" ? 0 : 1
                     // 머니 텍스트
                     if thisMonthDatas[selectedIndex].transactionType == "지출" {
-                        addVC.expenseView.moneyInputFieldView.textField.text = thisMonthDatas[selectedIndex].money
+                        addVC.expenseView.moneyInputFieldView.textField.text = Int(thisMonthDatas[selectedIndex].money)?.withComma
                     } else {
-                        addVC.inComeView.moneyInputFieldView.textField.text = thisMonthDatas[selectedIndex].money
+                        addVC.inComeView.moneyInputFieldView.textField.text =
+                        Int(thisMonthDatas[selectedIndex].money)?.withComma
                     }
                     
                     // 지출처/수입처
@@ -328,6 +349,7 @@ extension HomeViewController: UITableViewDataSource {
                         addVC.inComeView.memoTextField.text = thisMonthDatas[selectedIndex].memoText
                     }
                     
+                    addVC.hidesBottomBarWhenPushed = true
                     self.navigationController?.pushViewController(addVC, animated: true)
                 }
             }
