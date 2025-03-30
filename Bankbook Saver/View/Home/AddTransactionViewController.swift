@@ -242,7 +242,7 @@ extension AddTransactionViewController: View {
             .map{ .updatePurposeTextAction($0) }
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
-        
+         
         // 일시
         expenseView.expenseSelectedDate.subscribe { selectedDate in
             print("expenseView.selectedDate.subscribe")

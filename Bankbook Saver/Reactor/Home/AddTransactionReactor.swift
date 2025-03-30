@@ -149,7 +149,7 @@ extension AddTransactionReactor {
             // realm에 입력한 지출/수입 데이터 저장
             try! realm.write {
                 let homeData = HomeDataEntity()
-                
+             
                 homeData.transactionType = currentState.transactionType
                 homeData.money = String(currentState.moneyText.withOutComma)
                 homeData.purposeText = currentState.purposeText

@@ -43,6 +43,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
         
         let tabBarController = UITabBarController()
+        tabBarController.tabBar.tintColor = .label
         
         let homeViewController = UINavigationController(rootViewController: HomeViewController())
         let statisticViewController = UINavigationController(rootViewController: StatisticViewController())

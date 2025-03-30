@@ -49,22 +49,23 @@ class StatisticViewController: UIViewController, View {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         print("StatisticViewController - viewWillAppear() called")
-//        reactor?.action.onNext(.fetchDbDataAction)
+        
+        guard let reactor = self.reactor else {
+            print("🚨 Reactor가 nil입니다!")
+            return
+        }
+        
+        // 데이터 받아오기
+        reactor.action.onNext(.fetchDbDataAction)
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        print("StatisticViewController - viewWillDisappear() called")
-        //        segmentControl.selectedSegmentIndex = 2
-//        reactor?.action.onNext(.segmentControlIndexResetAction)
-    }
 }
 
 extension StatisticViewController {
     
     func bind(reactor: StatisticReactor) {
         
-        reactor.action.onNext(.fetchDbDataAction)
+//        reactor.action.onNext(.fetchDbDataAction)
         
 //        reactor.state
 //            .map{$0.selectedIndex}
@@ -91,6 +92,16 @@ extension StatisticViewController {
             .subscribe(onNext: { _ in
                 print("테이블 뷰 리로드")
                 self.statisticTableView.reloadData()
+            })
+            .disposed(by: disposeBag)
+        
+        // 데이터 추가, 삭제, 변경되면 테이블 뷰 리로드
+        reactor.state
+            .map{$0.dbDatas}
+            .distinctUntilChanged { $0 == $1 }
+            .observe(on: MainScheduler.asyncInstance)   // 새로운 이벤트가 발생하기 전에 현재 이벤트 처리가 끝날 때까지 기다려줌
+            .subscribe(onNext: { _ in
+                reactor.action.onNext(.updateSegmentIndexAction(self.segmentControl.selectedSegmentIndex))
             })
             .disposed(by: disposeBag)
         

@@ -304,16 +304,26 @@ extension HomeViewController: UITableViewDataSource {
                     addVC.segmentControl.selectedSegmentIndex = thisMonthDatas[selectedIndex].transactionType == "지출" ? 0 : 1
                     // 머니 텍스트
                     if thisMonthDatas[selectedIndex].transactionType == "지출" {
-                        addVC.expenseView.moneyInputFieldView.textField.text = Int(thisMonthDatas[selectedIndex].money)?.withComma
+                        let moneyText = Int(thisMonthDatas[selectedIndex].money)?.withComma ?? ""
+                        // addVC에서 .updatePurposeTextAction을 두번 구독하기 때문에 마지막에 구독하는 inComeView.moneyInputFieldView 값이 들어가서 어쩔 수 없이 둘 다 같은 값 넣는다.(수정 필요)
+                        addVC.expenseView.moneyInputFieldView.textField.text = moneyText
+                        addVC.inComeView.moneyInputFieldView.textField.text = moneyText
+                        
                     } else {
-                        addVC.inComeView.moneyInputFieldView.textField.text =
-                        Int(thisMonthDatas[selectedIndex].money)?.withComma
+                        let moneyText = Int(thisMonthDatas[selectedIndex].money)?.withComma ?? ""
+                        // addVC에서 .updatePurposeTextAction을 두번 구독하기 때문에 마지막에 구독하는 inComeView에 값이 들어가서 어쩔 수 없이 둘 다 같은 값 넣는다.(수정 필요)
+                        addVC.expenseView.moneyInputFieldView.textField.text = moneyText
+                        addVC.inComeView.moneyInputFieldView.textField.text = moneyText
                     }
                     
                     // 지출처/수입처
                     if thisMonthDatas[selectedIndex].transactionType == "지출" {
+                        // addVC에서 두번 구독하기 때문에 마지막에 구독하는 inComeView.moneyInputFieldView 값이 들어가서 어쩔 수 없이 둘 다 같은 값 넣는다.(수정 필요)
                         addVC.expenseView.expensePurposeInputFieldView.textField.text = thisMonthDatas[selectedIndex].purposeText
+                        addVC.inComeView.incomePurposeInputFieldView.textField.text =
+                        thisMonthDatas[selectedIndex].purposeText
                     } else {
+                        addVC.expenseView.expensePurposeInputFieldView.textField.text = thisMonthDatas[selectedIndex].purposeText
                         addVC.inComeView.incomePurposeInputFieldView.textField.text = thisMonthDatas[selectedIndex].purposeText
                     }
                     
@@ -324,7 +334,9 @@ extension HomeViewController: UITableViewDataSource {
                     // 매월 반복
                     if thisMonthDatas[selectedIndex].transactionType == "지출" {
                         addVC.expenseView.repeatState.isOn = thisMonthDatas[selectedIndex].repeatState
+                        addVC.inComeView.repeatState.isOn = thisMonthDatas[selectedIndex].repeatState
                     } else {
+                        addVC.expenseView.repeatState.isOn = thisMonthDatas[selectedIndex].repeatState
                         addVC.inComeView.repeatState.isOn = thisMonthDatas[selectedIndex].repeatState
                     }
                     
@@ -345,7 +357,9 @@ extension HomeViewController: UITableViewDataSource {
                     // 메모
                     if thisMonthDatas[selectedIndex].transactionType == "지출" {
                         addVC.expenseView.memoTextField.text = thisMonthDatas[selectedIndex].memoText
+                        addVC.inComeView.memoTextField.text = thisMonthDatas[selectedIndex].memoText
                     } else {
+                        addVC.expenseView.memoTextField.text = thisMonthDatas[selectedIndex].memoText
                         addVC.inComeView.memoTextField.text = thisMonthDatas[selectedIndex].memoText
                     }
                     

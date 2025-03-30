@@ -242,15 +242,25 @@ extension SearchHomeDataViewController: UITableViewDataSource {
                 addVC.segmentControl.selectedSegmentIndex = searchedDatas[selectedIndex].transactionType == "지출" ? 0 : 1
                 // 머니 텍스트
                 if searchedDatas[selectedIndex].transactionType == "지출" {
-                    addVC.expenseView.moneyInputFieldView.textField.text = Int(searchedDatas[selectedIndex].money)?.withComma
+                    let moneyText = Int(searchedDatas[selectedIndex].money)?.withComma ?? ""
+                    // addVC에서 .updatePurposeTextAction을 두번 구독하기 때문에 마지막에 구독하는 inComeView.moneyInputFieldView 값이 들어가서 어쩔 수 없이 둘 다 같은 값 넣는다.(수정 필요)
+                    addVC.expenseView.moneyInputFieldView.textField.text = moneyText
+                    addVC.inComeView.moneyInputFieldView.textField.text = moneyText
                 } else {
-                    addVC.inComeView.moneyInputFieldView.textField.text = Int(searchedDatas[selectedIndex].money)?.withComma
+                    let moneyText = Int(searchedDatas[selectedIndex].money)?.withComma ?? ""
+                    // addVC에서 .updatePurposeTextAction을 두번 구독하기 때문에 마지막에 구독하는 inComeView에 값이 들어가서 어쩔 수 없이 둘 다 같은 값 넣는다.(수정 필요)
+                    addVC.expenseView.moneyInputFieldView.textField.text = moneyText
+                    addVC.inComeView.moneyInputFieldView.textField.text = moneyText
                 }
                 
                 // 지출처/수입처
                 if searchedDatas[selectedIndex].transactionType == "지출" {
+                    // addVC에서 두번 구독하기 때문에 마지막에 구독하는 inComeView.moneyInputFieldView 값이 들어가서 어쩔 수 없이 둘 다 같은 값 넣는다.(수정 필요)
                     addVC.expenseView.expensePurposeInputFieldView.textField.text = searchedDatas[selectedIndex].purposeText
+                    addVC.inComeView.incomePurposeInputFieldView.textField.text =
+                    searchedDatas[selectedIndex].purposeText
                 } else {
+                    addVC.expenseView.expensePurposeInputFieldView.textField.text = searchedDatas[selectedIndex].purposeText
                     addVC.inComeView.incomePurposeInputFieldView.textField.text = searchedDatas[selectedIndex].purposeText
                 }
                 
@@ -261,7 +271,9 @@ extension SearchHomeDataViewController: UITableViewDataSource {
                 // 매월 반복
                 if searchedDatas[selectedIndex].transactionType == "지출" {
                     addVC.expenseView.repeatState.isOn = searchedDatas[selectedIndex].repeatState
+                    addVC.inComeView.repeatState.isOn = searchedDatas[selectedIndex].repeatState
                 } else {
+                    addVC.expenseView.repeatState.isOn = searchedDatas[selectedIndex].repeatState
                     addVC.inComeView.repeatState.isOn = searchedDatas[selectedIndex].repeatState
                 }
                 
@@ -281,8 +293,10 @@ extension SearchHomeDataViewController: UITableViewDataSource {
                 
                 // 메모
                 if searchedDatas[selectedIndex].transactionType == "지출" {
+                    addVC.inComeView.memoTextField.text = searchedDatas[selectedIndex].memoText
                     addVC.expenseView.memoTextField.text = searchedDatas[selectedIndex].memoText
                 } else {
+                    addVC.expenseView.memoTextField.text = searchedDatas[selectedIndex].memoText
                     addVC.inComeView.memoTextField.text = searchedDatas[selectedIndex].memoText
                 }
                 
