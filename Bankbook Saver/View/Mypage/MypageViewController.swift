@@ -149,9 +149,8 @@ extension MypageViewController: UITableViewDataSource {
                 break
             }
             
-//        case .etc:
-//            let accountVC = AccountViewController()
-//            self.navigationController?.pushViewController(accountVC, animated: true)
+        case .etc:
+            reactor?.action.onNext(.appStoreReviewAction)
             
         default:
             break

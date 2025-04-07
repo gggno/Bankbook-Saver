@@ -19,6 +19,8 @@ class MypageReactor: Reactor {
         case updateDisplayModeAction(String)    // 화면 모드 변경하기
         
         case getCurrentVersionAction            // 현재 버전 가져오기
+        
+        case appStoreReviewAction               // 앱스토어 리뷰 작성으로 이동
     }
     
     // 연산
@@ -134,7 +136,12 @@ extension MypageReactor {
             } else {
                 return Observable.just(.getCurrentVersionMutation(version: ""))
             }
-        
+            
+        case .appStoreReviewAction:                         // 앱스토어 리뷰 작성으로 이동
+            if let writeReviewURL = URL(string: "https://apps.apple.com/kr/app/%ED%85%85%EC%9E%A5-%EC%84%B8%EC%9D%B4%EB%B2%84/id6743690834?action=write-review") {
+                UIApplication.shared.open(writeReviewURL, options: [:], completionHandler: nil)
+            }
+            return .empty()
         }
     }
 }

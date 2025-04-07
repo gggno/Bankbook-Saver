@@ -86,7 +86,7 @@ class AddTransactionViewController: UIViewController {
     }
     
     // 거래 내역 삭제하기
-    @objc func deleteTransactionData() {
+    func deleteTransactionData() {
         print("AddTransactionViewController - deleteTransactionData() called")
         reactor?.action.onNext(.removeExistDataAction(self.transactionId))
     }
@@ -112,7 +112,7 @@ extension AddTransactionViewController {
         print("AddTransactionViewController - setLayout() called")
         
         // 오른쪽 상단 삭제 버튼
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "삭제", style: .plain, target: self, action: #selector(deleteTransactionData))
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "삭제", style: .plain, target: self, action: #selector(deleteAlert))
         
         // 수정하기가 아니면 삭제 버튼 히든
         if transactionId != nil {
@@ -202,6 +202,29 @@ extension AddTransactionViewController {
         }
         
         alert.addAction(doneAction)
+        
+        self.present(alert, animated: true)
+    }
+    
+    @objc func deleteAlert() {
+        print("AddTransactionViewController - deleteAlert() called")
+        
+        let alert = UIAlertController(title: "거래 내역 삭제",
+                                      message: "거래 내역을 삭제하시겠습니까?",
+                                      preferredStyle: .alert)
+        
+        let deleteAction = UIAlertAction(title: "삭제",
+                                       style: .destructive) { action in
+            self.deleteTransactionData()
+            self.navigationController?.popViewController(animated: true)
+        }
+        
+        let cancleAction = UIAlertAction(title: "취소",
+                                         style: .default) { action in
+          }
+        
+        alert.addAction(deleteAction)
+        alert.addAction(cancleAction)
         
         self.present(alert, animated: true)
     }
