@@ -70,7 +70,6 @@ extension HomeReactor {
                     
                 } else {
                     let day = dateArr[2]
-                    
                     days.append(day)
                 }
             }
@@ -79,8 +78,8 @@ extension HomeReactor {
             let allHomeDatas = realm.objects(HomeDataEntity.self)
                 .sorted(byKeyPath: "purposeDate", ascending: true)
             
-            // 이번달 홈 데이터 추출
-            let thisMonthHomeDatas: [HomeDataEntity] = allHomeDatas.filter {
+            // 선택한 달 홈 데이터 추출
+            var thisMonthHomeDatas: [HomeDataEntity] = allHomeDatas.filter {
                 let calendar = Calendar.current
                 let filterYear = calendar.component(.year, from: $0.purposeDate)
                 let filterMonth = calendar.component(.month, from: $0.purposeDate)
@@ -88,13 +87,60 @@ extension HomeReactor {
                 return filterYear == Int(year)! && filterMonth == Int(month)!
             }.map { $0 }
             
+            // 매월 반복 데이터 추출
+            let repeatDatas: [HomeDataEntity] = allHomeDatas.filter {
+                return $0.repeatState == true
+            }.map { $0 }
+            
+            // 선택한 달 홈 데이터에 매월 반복 데이터 추가
+            // 매월 반복 지출/수입 데이터 추출(선택한 날짜 이후의 데이터만 추출)
+            let repeatDateFormatter = DateFormatter()
+            repeatDateFormatter.dateFormat = "yyyy-MM"
+            repeatDateFormatter.locale = Locale(identifier: "ko_KR")
+            
+            let calendar = Calendar.current
+            
+            if let selectedDate = repeatDateFormatter.date(from: "\(year)-\(month)") {
+                for data in repeatDatas {
+                    
+                    // 반복되는 일(day)값을 이용하여 선택한 달의 해당하는 날 구하기
+                    let fromComponents = calendar.dateComponents([.year, .month], from: selectedDate)
+                    let toComponents = calendar.dateComponents([.year, .month], from: data.purposeDate)
+                    
+                    var changedPurposeDate = data.purposeDate
+                    
+                    if let fromYear = fromComponents.year,
+                       let fromMonth = fromComponents.month,
+                       let toYear = toComponents.year,
+                       let toMonth = toComponents.month {
+
+                        let fromTotalMonths = fromYear * 12 + fromMonth
+                        let toTotalMonths = toYear * 12 + toMonth
+                        // 월 차이 구하기
+                        let monthDiff = fromTotalMonths - toTotalMonths
+                        
+                        // 선택한 달의 날로 날짜 변경
+                        changedPurposeDate = calendar.date(byAdding: .month, value: monthDiff, to: data.purposeDate) ?? data.purposeDate
+                    }
+                    
+                    // 해당 달 이후만
+                    if selectedDate > data.purposeDate {
+                        let changedData = HomeDataEntity(_id: data._id, transactionType: data.transactionType, money: data.money, purposeText: data.purposeText, purposeDate: changedPurposeDate, repeatState: data.repeatState, expenseKind: data.expenseKind, selectedCategoryIndex: data.selectedCategoryIndex, memoText: data.memoText)
+                        
+                        thisMonthHomeDatas.append(changedData)
+                    }
+                }
+            }
+            
             var filterInOutDatas: [String: [InOutCellInfo]] = [:]
             
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "d일 EEEE"
             dateFormatter.locale = Locale(identifier: "ko_KR")
             
+            // 선택한 달의 데이터 추출하기
             for data in thisMonthHomeDatas {
+                
                 let purposeDate = dateFormatter.string(from: data.purposeDate)
                 let emoji = data.transactionType == "수입"
                 ? InComeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
@@ -137,7 +183,6 @@ extension HomeReactor {
                     }
                 }
             }
-            
             
             return Observable.concat([
                 // 날짜 데이터

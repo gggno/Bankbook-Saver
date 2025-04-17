@@ -23,6 +23,7 @@ class HomeDataEntity: Object {
     convenience init(_id: ObjectId, transactionType: String, money: String, purposeText: String, purposeDate: Date, repeatState: Bool, expenseKind: Int, selectedCategoryIndex: Int, memoText: String) {
         self.init()
         
+        self._id = _id
         self.transactionType = transactionType
         self.money = money
         self.purposeText = purposeText

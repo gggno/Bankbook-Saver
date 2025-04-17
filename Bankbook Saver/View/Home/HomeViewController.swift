@@ -287,9 +287,10 @@ extension HomeViewController: UITableViewDataSource {
                 if let inOutCell = reactor?.currentState.inOutData[key],
                    let thisMonthDatas = reactor?.currentState.thisMonthDatas,
                    let selectedIndex = thisMonthDatas.firstIndex(where: { $0._id.stringValue == inOutCell[indexPath.row].id }) {
-                    
+                    print("THIS: \(thisMonthDatas)")
                     let addVC = AddTransactionViewController()
                     addVC.title = "거래 내역 수정하기"
+                    print("transactionId: \(thisMonthDatas[selectedIndex]._id.stringValue)")
                     addVC.transactionId = thisMonthDatas[selectedIndex]._id.stringValue
                     
                     if thisMonthDatas[selectedIndex].transactionType == "지출" {

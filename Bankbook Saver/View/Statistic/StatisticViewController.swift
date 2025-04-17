@@ -65,18 +65,6 @@ extension StatisticViewController {
     
     func bind(reactor: StatisticReactor) {
         
-//        reactor.action.onNext(.fetchDbDataAction)
-        
-//        reactor.state
-//            .map{$0.selectedIndex}
-//            .distinctUntilChanged()
-//            .subscribe { index in
-//                print("index2:\(index)")
-//                self.segmentControl.selectedSegmentIndex = index
-//                reactor.action.onNext(.updateSegmentIndexAction(index))
-//            }
-//            .disposed(by: disposeBag)
-        
         segmentControl.rx.selectedSegmentIndex
             .distinctUntilChanged()
             .subscribe { index in

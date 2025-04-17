@@ -91,7 +91,8 @@ extension AddTransactionReactor {
             
         case .removeExistDataAction(let id):// 등록된 거래내역 데이터 삭제하기(realm에서 삭제, 정기 알림도 삭제 후 다시
             guard let id = id, let objectId = try? ObjectId(string: id) else { return .empty() }
-            
+            print("id: \(id)")
+            print("objectId: \(objectId)")
             // 기존에 등록된 거래내역 데이터 삭제
             try! realm.write {
                 if let homeData = realm.objects(HomeDataEntity.self).filter("_id == %@", objectId).first {
@@ -144,7 +145,7 @@ extension AddTransactionReactor {
         case .updateCategoryIndexMutation(let index):
             print(index)
             newState.selectedCategoryIndex = index
-        
+         
         case .addHomeDataMutation:
             // realm에 입력한 지출/수입 데이터 저장
             try! realm.write {

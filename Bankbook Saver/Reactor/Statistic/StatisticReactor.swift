@@ -66,7 +66,6 @@ extension StatisticReactor {
             let calendar = Calendar.current
             let todayYear = calendar.component(.year, from: today)
             let todayMonth = calendar.component(.month, from: today)
-            let todayWeekOfMonth = calendar.component(.weekOfMonth, from: today)
             let todayDay = calendar.component(.day, from: today)
             
             var dateText: String = ""
@@ -82,12 +81,47 @@ extension StatisticReactor {
                 print("case 0: 일별")
                 let allDbDatas = self.currentState.dbDatas
 
-                let dayFilterDatas = allDbDatas.filter {
+                var dayFilterDatas = allDbDatas.filter {
                     let filterYear = calendar.component(.year, from: $0.purposeDate)
                     let filterMonth = calendar.component(.month, from: $0.purposeDate)
                     let filterDay = calendar.component(.day, from: $0.purposeDate)
                     
                     return filterYear == todayYear && filterMonth == todayMonth && filterDay == todayDay
+                }
+                
+                // 오늘 시작 시간
+                let startToday = calendar.startOfDay(for: today)
+                let endDay = calendar.range(of: .day, in: .month, for: today)?.count
+                
+                // 반복되는 데이터 추출
+                let repeatDatas = allDbDatas.filter {
+                    return $0.purposeDate < startToday && $0.repeatState == true
+                }
+                
+                for data in repeatDatas {
+                    var dateComponents = calendar.dateComponents([.hour, .minute, .second], from: data.purposeDate)
+                    dateComponents.year = todayYear
+                    dateComponents.month = todayMonth
+                    
+                    // 현재 달의 마지막 날보다 높으면 현재 달의 마지막 날로 할당
+                    let filterDay = calendar.component(.day, from: data.purposeDate)
+                    
+                    if let endDay = endDay {
+                        // 현재 달의 마지막 날보다 높으면 현재 달의 마지막 날로 할당
+                        if filterDay > endDay && todayDay == endDay {
+                            dateComponents.day = endDay
+                        } else if filterDay == todayDay {   // 현재 달의 마지막 날보다 높지 않으면 현재 날로 할당
+                            dateComponents.day = todayDay
+                        } else {
+                            continue
+                        }
+                    }
+                    
+                    // 반복 데이터의 날짜를 오늘 날짜로 변경 후 dayFilterDatas에 넣어주기
+                    if let changedDate = calendar.date(from: dateComponents) {
+                        let changedRepeatData = HomeDataEntity(_id: data._id, transactionType: data.transactionType, money: data.money, purposeText: data.purposeText, purposeDate: changedDate, repeatState: data.repeatState, expenseKind: data.expenseKind, selectedCategoryIndex: data.selectedCategoryIndex, memoText: data.memoText)
+                        dayFilterDatas.append(changedRepeatData)
+                    }
                 }
                 
                 // 날짜
@@ -110,12 +144,47 @@ extension StatisticReactor {
                 let lastMonth = calendar.component(.month, from: lastDate)
                 let lastDay = calendar.component(.day, from: lastDate)
                 
-                let lastDayFliterDatas = allDbDatas.filter {
+                var lastDayFliterDatas = allDbDatas.filter {
                     let filterYear = calendar.component(.year, from: $0.purposeDate)
                     let filterMonth = calendar.component(.month, from: $0.purposeDate)
                     let filterDay = calendar.component(.day, from: $0.purposeDate)
                     
                     return filterYear == lastYear && filterMonth == lastMonth && filterDay == lastDay
+                }
+                
+                // 오늘 시작 시간
+                let startLastDay = calendar.startOfDay(for: lastDate)
+                let endLastDay = calendar.range(of: .day, in: .month, for: lastDate)?.count
+                
+                // 반복되는 데이터 추출
+                let lastRepeatDatas = allDbDatas.filter {
+                    return $0.purposeDate < startLastDay && $0.repeatState == true
+                }
+                
+                for data in lastRepeatDatas {
+                    var dateComponents = calendar.dateComponents([.hour, .minute, .second], from: data.purposeDate)
+                    dateComponents.year = lastYear
+                    dateComponents.month = lastMonth
+                    
+                    // 현재 달의 마지막 날보다 높으면 현재 달의 마지막 날로 할당
+                    let filterDay = calendar.component(.day, from: data.purposeDate)
+                    
+                    if let endDay = endLastDay {
+                        // 지금이 현재 달의 마지막 날이고, 현재 달의 마지막 날보다 높으면 현재 달의 마지막 날로 할당
+                        if filterDay > endDay && lastDay == endDay {
+                            dateComponents.day = endDay
+                        } else if filterDay == lastDay { // 현재 달의 마지막 날보다 높지 않으면 현재 날로 할당
+                            dateComponents.day = lastDay
+                        } else {
+                            continue
+                        }
+                    }
+                    
+                    // 반복 데이터의 날짜를 오늘 날짜로 변경 후 lastDayFliterDatas에 넣어주기
+                    if let changedDate = calendar.date(from: dateComponents) {
+                        let changedRepeatData = HomeDataEntity(_id: data._id, transactionType: data.transactionType, money: data.money, purposeText: data.purposeText, purposeDate: changedDate, repeatState: data.repeatState, expenseKind: data.expenseKind, selectedCategoryIndex: data.selectedCategoryIndex, memoText: data.memoText)
+                        lastDayFliterDatas.append(changedRepeatData)
+                    }
                 }
                 
                 // 오늘 지출 데이터 필터링
@@ -142,12 +211,48 @@ extension StatisticReactor {
                     let barChartMonth = calendar.component(.month, from: barChartDate)
                     let barChartDay = calendar.component(.day, from: barChartDate)
                     
-                    let barChartDayFliterDatas = allDbDatas.filter {
+                    var barChartDayFliterDatas = allDbDatas.filter {
                         let filterYear = calendar.component(.year, from: $0.purposeDate)
                         let filterMonth = calendar.component(.month, from: $0.purposeDate)
                         let filterDay = calendar.component(.day, from: $0.purposeDate)
                         
                         return filterYear == barChartYear && filterMonth == barChartMonth && filterDay == barChartDay
+                    }
+                    
+                    // 오늘 날의 시작 시간
+                    let startBarChartDay = calendar.startOfDay(for: barChartDate)
+                    // 선택한 날의 날 개수
+                    let endBarChartDay = calendar.range(of: .day, in: .month, for: barChartDate)?.count
+                    
+                    // 반복되는 데이터 추출
+                    let barChartRepeatDatas = allDbDatas.filter {
+                        return $0.purposeDate < startBarChartDay && $0.repeatState == true
+                    }
+                    
+                    for data in barChartRepeatDatas {
+                        var dateComponents = calendar.dateComponents([.hour, .minute, .second], from: data.purposeDate)
+                        dateComponents.year = barChartYear
+                        dateComponents.month = barChartMonth
+                        
+                        // 선택한 달의 마지막 날보다 높으면 선택한 달의 마지막 날로 할당
+                        let filterDay = calendar.component(.day, from: data.purposeDate)
+                        
+                        if let endDay = endBarChartDay {
+                            // 지금이 선택한 달의 마지막 날이고, 선택한 달의 마지막 날보다 높으면 선택한 달의 마지막 날로 할당
+                            if filterDay > endDay && barChartDay == endDay {
+                                dateComponents.day = endDay
+                            } else if filterDay == barChartDay { // 선택한 달의 마지막 날보다 높지 않으면 선택한 날로 할당
+                                dateComponents.day = barChartDay
+                            } else {
+                                continue
+                            }
+                        }
+                        
+                        // 반복 데이터의 날짜를 선택한 날짜로 변경 후 barChartDayFliterDatas에 넣어주기
+                        if let changedDate = calendar.date(from: dateComponents) {
+                            let changedRepeatData = HomeDataEntity(_id: data._id, transactionType: data.transactionType, money: data.money, purposeText: data.purposeText, purposeDate: changedDate, repeatState: data.repeatState, expenseKind: data.expenseKind, selectedCategoryIndex: data.selectedCategoryIndex, memoText: data.memoText)
+                            barChartDayFliterDatas.append(changedRepeatData)
+                        }
                     }
                     
                     let barChartDayOutMoney = barChartDayFliterDatas
@@ -187,7 +292,6 @@ extension StatisticReactor {
                     : ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
                     let money = data.transactionType == "수입" ? data.money : String(-Int(data.money)!)
                     let detailUse = data.purposeText
-                    let detailDate = data.purposeDate
                     
                     if inOutDatas[purposeDate] == nil {
                         inOutDatas[purposeDate] = [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
@@ -211,7 +315,22 @@ extension StatisticReactor {
                 var endWeekDay = calendar.date(byAdding: .day, value: endDayInt, to: today)!
                 endWeekDay = calendar.date(byAdding: .second, value: 86399, to: calendar.startOfDay(for: endWeekDay))!
                 
-                let weekOfMonthDbDatas = allDbDatas.filter { startWeekDay <= $0.purposeDate && endWeekDay >= $0.purposeDate }
+                var weekOfMonthDbDatas = allDbDatas.filter { startWeekDay <= $0.purposeDate && endWeekDay >= $0.purposeDate }
+                
+                // 1. 반복 데이터 필터링
+                let repeatDatas = allDbDatas.filter {
+                    $0.purposeDate < startWeekDay &&
+                    $0.repeatState == true &&
+                    repeatWeekOfMonthDate(from: $0.purposeDate, startWeek: startWeekDay, endWeek: endWeekDay, calendar: calendar).map { $0 >= startWeekDay && $0 <= endWeekDay } ?? false
+                }
+                
+                // 2. 매핑된 날짜로 새로운 데이터 생성 후 weekOfMonthDbDatas에 추가
+                weekOfMonthDbDatas.append(contentsOf: appendWeekOfRepeatDatas(
+                    repeatDatas: repeatDatas,
+                    startWeek: startWeekDay,
+                    endWeek: endWeekDay,
+                    calendar: calendar
+                ))
                 
                 // 날짜
                 let weekDateFormatter = DateFormatter()
@@ -236,7 +355,22 @@ extension StatisticReactor {
                 var endLastWeekDay = calendar.date(byAdding: .day, value: endDayInt - 7, to: today)!
                 endLastWeekDay = calendar.date(byAdding: .second, value: 86399, to: calendar.startOfDay(for: endLastWeekDay))!
                 
-                let lastWeekOfMonthFliterDatas = allDbDatas.filter { startLastWeekDay <= $0.purposeDate && endLastWeekDay >= $0.purposeDate }
+                var lastWeekOfMonthFliterDatas = allDbDatas.filter { startLastWeekDay <= $0.purposeDate && endLastWeekDay >= $0.purposeDate }
+                
+                // 1. 반복 데이터 필터링
+                let lastWeekOfRepeatDatas = allDbDatas.filter {
+                    $0.purposeDate < startLastWeekDay &&
+                    $0.repeatState == true &&
+                    repeatWeekOfMonthDate(from: $0.purposeDate, startWeek: startLastWeekDay, endWeek: endLastWeekDay, calendar: calendar).map { $0 >= startLastWeekDay && $0 <= endLastWeekDay } ?? false
+                }
+                
+                // 2. 매핑된 날짜로 새로운 데이터 생성 후 lastWeekOfMonthFliterDatas에 추가
+                lastWeekOfMonthFliterDatas.append(contentsOf: appendWeekOfRepeatDatas(
+                    repeatDatas: lastWeekOfRepeatDatas,
+                    startWeek: startLastWeekDay,
+                    endWeek: endLastWeekDay,
+                    calendar: calendar
+                ))
                                 
                 let thisMonthOutMoney = weekOfMonthDbDatas
                     .filter {$0.transactionType == "지출"}
@@ -262,7 +396,22 @@ extension StatisticReactor {
                     var endBarWeekDay = calendar.date(byAdding: .day, value: endDayInt + (value * 7), to: today)!
                     endBarWeekDay = calendar.date(byAdding: .second, value: 86399, to: calendar.startOfDay(for: endBarWeekDay))!
                     
-                    let barChartWeekOfMonthFliterDatas = allDbDatas.filter { startBarWeekDay <= $0.purposeDate && endBarWeekDay >= $0.purposeDate }
+                    var barChartWeekOfMonthFliterDatas = allDbDatas.filter { startBarWeekDay <= $0.purposeDate && endBarWeekDay >= $0.purposeDate }
+                    
+                    // 1. 반복 데이터 필터링
+                    let lastWeekOfBarRepeatDatas = allDbDatas.filter {
+                        $0.purposeDate < startBarWeekDay &&
+                        $0.repeatState == true &&
+                        repeatWeekOfMonthDate(from: $0.purposeDate, startWeek: startBarWeekDay, endWeek: endBarWeekDay, calendar: calendar).map { $0 >= startBarWeekDay && $0 <= endBarWeekDay } ?? false
+                    }
+                    
+                    // 2. 매핑된 날짜로 새로운 데이터 생성 후 barChartWeekOfMonthFliterDatas에 추가
+                    barChartWeekOfMonthFliterDatas.append(contentsOf: appendWeekOfRepeatDatas(
+                        repeatDatas: lastWeekOfBarRepeatDatas,
+                        startWeek: startBarWeekDay,
+                        endWeek: endBarWeekDay,
+                        calendar: calendar
+                    ))
                     
                     let barChartWeekOfMonthOutMoney = barChartWeekOfMonthFliterDatas
                         .filter {$0.transactionType == "지출"}
@@ -304,7 +453,6 @@ extension StatisticReactor {
                     : ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
                     let money = data.transactionType == "수입" ? data.money : String(-Int(data.money)!)
                     let detailUse = data.purposeText
-                    let detailDate = data.purposeDate
                     
                     if inOutDatas[purposeDate] == nil {
                         inOutDatas[purposeDate] = [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
@@ -318,11 +466,30 @@ extension StatisticReactor {
                 print("case 2: 월별")
                 let allDbDatas = self.currentState.dbDatas
                 
-                let monthFilterDatas = allDbDatas.filter {
+                var monthFilterDatas = allDbDatas.filter {
                     let filterYear = calendar.component(.year, from: $0.purposeDate)
                     let filterMonth = calendar.component(.month, from: $0.purposeDate)
                     return filterYear == todayYear && filterMonth == todayMonth
                 }
+                
+                let yearMonthFormatter = DateFormatter()
+                yearMonthFormatter.dateFormat = "yyyy-MM"
+                yearMonthFormatter.locale = Locale(identifier: "ko_KR")
+                
+                // 매월 반복 데이터 추출
+                let repeatDatas: [HomeDataEntity] = allDbDatas.filter {
+                    let filterYear = calendar.component(.year, from: $0.purposeDate)
+                    let filterMonth = calendar.component(.month, from: $0.purposeDate)
+                    
+                    if let filterDate = yearMonthFormatter.date(from: "\(filterYear)-\(filterMonth)"),
+                       let todayDate = yearMonthFormatter.date(from: "\(todayYear)-\(todayMonth)") {
+                        return todayDate > filterDate && $0.repeatState == true
+                    } else {
+                        return false
+                    }
+                }.map { $0 }
+                
+                monthFilterDatas.append(contentsOf: appendMonthRepeatDatas(year: todayYear, month: todayMonth, repeatDatas: repeatDatas, calendar: calendar))
                 
                 // 날짜
                 dateText = "\(todayYear)년 \(todayMonth)월"
@@ -341,11 +508,27 @@ extension StatisticReactor {
                 let lastDate = calendar.date(byAdding: .month, value: -1, to: today)!
                 let lastYear = calendar.component(.year, from: lastDate)
                 let lastMonth = calendar.component(.month, from: lastDate)
-                let lastMonthFliterDatas = allDbDatas.filter {
+                
+                var lastMonthFliterDatas = allDbDatas.filter {
                     let filterYear = calendar.component(.year, from: $0.purposeDate)
                     let filterMonth = calendar.component(.month, from: $0.purposeDate)
                     return filterYear == lastYear && filterMonth == lastMonth
                 }
+                
+                // 매월 반복 데이터 추출
+                let lastRepeatDatas: [HomeDataEntity] = allDbDatas.filter {
+                    let filterYear = calendar.component(.year, from: $0.purposeDate)
+                    let filterMonth = calendar.component(.month, from: $0.purposeDate)
+                    
+                    if let filterDate = yearMonthFormatter.date(from: "\(filterYear)-\(filterMonth)"),
+                       let selectedDate = yearMonthFormatter.date(from: "\(lastYear)-\(lastMonth)") {
+                        return selectedDate > filterDate && $0.repeatState == true
+                    } else {
+                        return false
+                    }
+                }.map { $0 }
+                
+                lastMonthFliterDatas.append(contentsOf: appendMonthRepeatDatas(year: lastYear, month: lastMonth, repeatDatas: lastRepeatDatas, calendar: calendar))
                 
                 let thisMonthOutMoney = monthFilterDatas
                     .filter {$0.transactionType == "지출"}
@@ -371,11 +554,26 @@ extension StatisticReactor {
                     let barChartYear = calendar.component(.year, from: barChartDate)
                     let barChartMonth = calendar.component(.month, from: barChartDate)
                     
-                    let barChartMonthFliterDatas = allDbDatas.filter {
+                    var barChartMonthFliterDatas = allDbDatas.filter {
                         let filterYear = calendar.component(.year, from: $0.purposeDate)
                         let filterMonth = calendar.component(.month, from: $0.purposeDate)
                         return filterYear == barChartYear && filterMonth == barChartMonth
                     }
+                    
+                    // 매월 반복 데이터 추출
+                    let repeatBarDatas: [HomeDataEntity] = allDbDatas.filter {
+                        let filterYear = calendar.component(.year, from: $0.purposeDate)
+                        let filterMonth = calendar.component(.month, from: $0.purposeDate)
+                        
+                        if let filterDate = yearMonthFormatter.date(from: "\(filterYear)-\(filterMonth)"),
+                           let selectedDate = yearMonthFormatter.date(from: "\(barChartYear)-\(barChartMonth)") {
+                            return selectedDate > filterDate && $0.repeatState == true
+                        } else {
+                            return false
+                        }
+                    }.map { $0 }
+                    
+                    barChartMonthFliterDatas.append(contentsOf: appendMonthRepeatDatas(year: barChartYear, month: barChartMonth, repeatDatas: repeatBarDatas, calendar: calendar))
                     
                     let barChartMonthOutMoney = barChartMonthFliterDatas
                         .filter {$0.transactionType == "지출"}
@@ -414,7 +612,6 @@ extension StatisticReactor {
                     : ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
                     let money = data.transactionType == "수입" ? data.money : "-\(data.money)"
                     let detailUse = data.purposeText
-                    let detailDate = data.purposeDate
                     
                     if inOutDatas[purposeDate] == nil {
                         inOutDatas[purposeDate] = [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
@@ -457,13 +654,13 @@ extension StatisticReactor {
                 print("default")
             }
             
-            // today라는 이름 안됨. 변경해야 함
-            let todayYear = calendar.component(.year, from: selectedDate)
-            let todayMonth = calendar.component(.month, from: selectedDate)
-            let todayWeekOfMonth = calendar.component(.weekOfMonth, from: selectedDate)
-            let todayDay = calendar.component(.day, from: selectedDate)
+            let selectedDayYear = calendar.component(.year, from: selectedDate)
+            let selectedDayMonth = calendar.component(.month, from: selectedDate)
+            let selectedDayWeekOfMonth = calendar.component(.weekOfMonth, from: selectedDate)
+            let selectedDayDay = calendar.component(.day, from: selectedDate)
+            
             print("selectedDate: \(selectedDate)")
-            print("todayWeekOfMonth: \(todayWeekOfMonth)")
+            print("selectedDayWeekOfMonth: \(selectedDayWeekOfMonth)")
             var dateText: String = ""
             var outComeMoneyText: String = ""
             var inComeMoneyText: String = ""
@@ -477,16 +674,51 @@ extension StatisticReactor {
                 print("case 0: 일별")
                 let allDbDatas = self.currentState.dbDatas
 
-                let dayFilterDatas = allDbDatas.filter {
+                var dayFilterDatas = allDbDatas.filter {
                     let filterYear = calendar.component(.year, from: $0.purposeDate)
                     let filterMonth = calendar.component(.month, from: $0.purposeDate)
                     let filterDay = calendar.component(.day, from: $0.purposeDate)
                     
-                    return filterYear == todayYear && filterMonth == todayMonth && filterDay == todayDay
+                    return filterYear == selectedDayYear && filterMonth == selectedDayMonth && filterDay == selectedDayDay
+                }
+                
+                // 오늘 시작 시간
+                let startSelectedDay = calendar.startOfDay(for: selectedDate)
+                let endSelectedDay = calendar.range(of: .day, in: .month, for: selectedDate)?.count
+                
+                // 반복되는 데이터 추출
+                let repeatDatas = allDbDatas.filter {
+                    return $0.purposeDate < startSelectedDay && $0.repeatState == true
+                }
+                
+                for data in repeatDatas {
+                    var dateComponents = calendar.dateComponents([.hour, .minute, .second], from: data.purposeDate)
+                    dateComponents.year = selectedDayYear
+                    dateComponents.month = selectedDayMonth
+                    
+                    // 현재 달의 마지막 날보다 높으면 현재 달의 마지막 날로 할당
+                    let filterDay = calendar.component(.day, from: data.purposeDate)
+                    
+                    if let endDay = endSelectedDay {
+                        // 지금이 현재 달의 마지막 날이고, 현재 달의 마지막 날보다 높으면 현재 달의 마지막 날로 할당
+                        if filterDay > endDay && selectedDayDay == endDay {
+                            dateComponents.day = endDay
+                        } else if filterDay == selectedDayDay { // 현재 달의 마지막 날보다 높지 않으면 현재 날로 할당
+                            dateComponents.day = selectedDayDay
+                        } else {
+                            continue
+                        }
+                    }
+                    
+                    // 반복 데이터의 날짜를 오늘 날짜로 변경 후 dayFilterDatas에 넣어주기
+                    if let changedDate = calendar.date(from: dateComponents) {
+                        let changedRepeatData = HomeDataEntity(_id: data._id, transactionType: data.transactionType, money: data.money, purposeText: data.purposeText, purposeDate: changedDate, repeatState: data.repeatState, expenseKind: data.expenseKind, selectedCategoryIndex: data.selectedCategoryIndex, memoText: data.memoText)
+                        dayFilterDatas.append(changedRepeatData)
+                    }
                 }
                 
                 // 날짜
-                dateText = "\(todayMonth)월 \(todayDay)일"
+                dateText = "\(selectedDayMonth)월 \(selectedDayDay)일"
                 
                 // 총 지출
                 outComeMoneyText = String(dayFilterDatas
@@ -505,12 +737,47 @@ extension StatisticReactor {
                 let lastMonth = calendar.component(.month, from: lastDate)
                 let lastDay = calendar.component(.day, from: lastDate)
                 
-                let lastDayFliterDatas = allDbDatas.filter {
+                var lastDayFliterDatas = allDbDatas.filter {
                     let filterYear = calendar.component(.year, from: $0.purposeDate)
                     let filterMonth = calendar.component(.month, from: $0.purposeDate)
                     let filterDay = calendar.component(.day, from: $0.purposeDate)
                     
                     return filterYear == lastYear && filterMonth == lastMonth && filterDay == lastDay
+                }
+                
+                // 오늘 시작 시간
+                let startLastDay = calendar.startOfDay(for: lastDate)
+                let endLastDay = calendar.range(of: .day, in: .month, for: lastDate)?.count
+                
+                // 반복되는 데이터 추출
+                let lastRepeatDatas = allDbDatas.filter {
+                    return $0.purposeDate < startLastDay && $0.repeatState == true
+                }
+                
+                for data in lastRepeatDatas {
+                    var dateComponents = calendar.dateComponents([.hour, .minute, .second], from: data.purposeDate)
+                    dateComponents.year = lastYear
+                    dateComponents.month = lastMonth
+                    
+                    // 현재 달의 마지막 날보다 높으면 현재 달의 마지막 날로 할당
+                    let filterDay = calendar.component(.day, from: data.purposeDate)
+                    
+                    if let endDay = endLastDay {
+                        // 지금이 현재 달의 마지막 날이고, 현재 달의 마지막 날보다 높으면 현재 달의 마지막 날로 할당
+                        if filterDay > endDay && lastDay == endDay {
+                            dateComponents.day = endDay
+                        } else if filterDay == lastDay { // 현재 달의 마지막 날보다 높지 않으면 현재 날로 할당
+                            dateComponents.day = lastDay
+                        } else {
+                            continue
+                        }
+                    }
+                    
+                    // 반복 데이터의 날짜를 오늘 날짜로 변경 후 lastDayFliterDatas에 넣어주기
+                    if let changedDate = calendar.date(from: dateComponents) {
+                        let changedRepeatData = HomeDataEntity(_id: data._id, transactionType: data.transactionType, money: data.money, purposeText: data.purposeText, purposeDate: changedDate, repeatState: data.repeatState, expenseKind: data.expenseKind, selectedCategoryIndex: data.selectedCategoryIndex, memoText: data.memoText)
+                        lastDayFliterDatas.append(changedRepeatData)
+                    }
                 }
                 
                 // 오늘 지출 데이터 필터링
@@ -538,12 +805,48 @@ extension StatisticReactor {
                     let barChartMonth = calendar.component(.month, from: barChartDate)
                     let barChartDay = calendar.component(.day, from: barChartDate)
                     
-                    let barChartDayFliterDatas = allDbDatas.filter {
+                    var barChartDayFliterDatas = allDbDatas.filter {
                         let filterYear = calendar.component(.year, from: $0.purposeDate)
                         let filterMonth = calendar.component(.month, from: $0.purposeDate)
                         let filterDay = calendar.component(.day, from: $0.purposeDate)
                         
                         return filterYear == barChartYear && filterMonth == barChartMonth && filterDay == barChartDay
+                    }
+                    
+                    // 선택한 날의 시작 시간
+                    let startBarChartDay = calendar.startOfDay(for: barChartDate)
+                    // 선택한 날의 날 개수
+                    let endBarChartDay = calendar.range(of: .day, in: .month, for: barChartDate)?.count
+                    
+                    // 반복되는 데이터 추출
+                    let barChartRepeatDatas = allDbDatas.filter {
+                        return $0.purposeDate < startBarChartDay && $0.repeatState == true
+                    }
+                    
+                    for data in barChartRepeatDatas {
+                        var dateComponents = calendar.dateComponents([.hour, .minute, .second], from: data.purposeDate)
+                        dateComponents.year = barChartYear
+                        dateComponents.month = barChartMonth
+                        
+                        // 선택한 달의 마지막 날보다 높으면 선택한 달의 마지막 날로 할당
+                        let filterDay = calendar.component(.day, from: data.purposeDate)
+                        
+                        if let endDay = endBarChartDay {
+                            // 지금이 선택한 달의 마지막 날이고, 선택한 달의 마지막 날보다 높으면 선택한 달의 마지막 날로 할당
+                            if filterDay > endDay && barChartDay == endDay {
+                                dateComponents.day = endDay
+                            } else if filterDay == barChartDay { // 선택한 달의 마지막 날보다 높지 않으면 선택한 날로 할당
+                                dateComponents.day = barChartDay
+                            } else {
+                                continue
+                            }
+                        }
+                        
+                        // 반복 데이터의 날짜를 선택한 날짜로 변경 후 barChartDayFliterDatas에 넣어주기
+                        if let changedDate = calendar.date(from: dateComponents) {
+                            let changedRepeatData = HomeDataEntity(_id: data._id, transactionType: data.transactionType, money: data.money, purposeText: data.purposeText, purposeDate: changedDate, repeatState: data.repeatState, expenseKind: data.expenseKind, selectedCategoryIndex: data.selectedCategoryIndex, memoText: data.memoText)
+                            barChartDayFliterDatas.append(changedRepeatData)
+                        }
                     }
                     
                     let barChartDayOutMoney = barChartDayFliterDatas
@@ -583,7 +886,6 @@ extension StatisticReactor {
                     : ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
                     let money = data.transactionType == "수입" ? data.money : String(-Int(data.money)!)
                     let detailUse = data.purposeText
-                    let detailDate = data.purposeDate
                     
                     if inOutDatas[purposeDate] == nil {
                         inOutDatas[purposeDate] = [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
@@ -607,7 +909,22 @@ extension StatisticReactor {
                 var endWeekDay = calendar.date(byAdding: .day, value: endDayInt, to: selectedDate)!
                 endWeekDay = calendar.date(byAdding: .second, value: 86399, to: calendar.startOfDay(for: endWeekDay))!
                 
-                let weekOfMonthDbDatas = allDbDatas.filter { startWeekDay <= $0.purposeDate && endWeekDay >= $0.purposeDate }
+                var weekOfMonthDbDatas = allDbDatas.filter { startWeekDay <= $0.purposeDate && endWeekDay >= $0.purposeDate }
+                
+                // 1. 반복 데이터 필터링
+                let repeatDatas = allDbDatas.filter {
+                    $0.purposeDate < startWeekDay &&
+                    $0.repeatState == true &&
+                    repeatWeekOfMonthDate(from: $0.purposeDate, startWeek: startWeekDay, endWeek: endWeekDay, calendar: calendar).map { $0 >= startWeekDay && $0 <= endWeekDay } ?? false
+                }
+                
+                // 2. 매핑된 날짜로 새로운 데이터 생성 후 weekOfMonthDbDatas에 추가
+                weekOfMonthDbDatas.append(contentsOf: appendWeekOfRepeatDatas(
+                    repeatDatas: repeatDatas,
+                    startWeek: startWeekDay,
+                    endWeek: endWeekDay,
+                    calendar: calendar
+                ))
                 
                 // 날짜
                 let weekDateFormatter = DateFormatter()
@@ -632,8 +949,23 @@ extension StatisticReactor {
                 var endLastWeekDay = calendar.date(byAdding: .day, value: endDayInt + (7 * (-1 + count)), to: today)!
                 endLastWeekDay = calendar.date(byAdding: .second, value: 86399, to: calendar.startOfDay(for: endLastWeekDay))!
                 
-                let lastWeekOfMonthFliterDatas = allDbDatas.filter { startLastWeekDay <= $0.purposeDate && endLastWeekDay >= $0.purposeDate }
-                                
+                var lastWeekOfMonthFliterDatas = allDbDatas.filter { startLastWeekDay <= $0.purposeDate && endLastWeekDay >= $0.purposeDate }
+                
+                // 1. 반복 데이터 필터링
+                let lastWeekOfRepeatDatas = allDbDatas.filter {
+                    $0.purposeDate < startLastWeekDay &&
+                    $0.repeatState == true &&
+                    repeatWeekOfMonthDate(from: $0.purposeDate, startWeek: startLastWeekDay, endWeek: endLastWeekDay, calendar: calendar).map { $0 >= startLastWeekDay && $0 <= endLastWeekDay } ?? false
+                }
+                
+                // 2. 매핑된 날짜로 새로운 데이터 생성 후 lastWeekOfMonthFliterDatas에 추가
+                lastWeekOfMonthFliterDatas.append(contentsOf: appendWeekOfRepeatDatas(
+                    repeatDatas: lastWeekOfRepeatDatas,
+                    startWeek: startLastWeekDay,
+                    endWeek: endLastWeekDay,
+                    calendar: calendar
+                ))
+                
                 let thisMonthOutMoney = weekOfMonthDbDatas
                     .filter {$0.transactionType == "지출"}
                     .reduce(0) { $0 + (Int($1.money) ?? 0) }
@@ -659,7 +991,22 @@ extension StatisticReactor {
                     var endBarWeekDay = calendar.date(byAdding: .day, value: endDayInt + (value * 7), to: selectedDate)!
                     endBarWeekDay = calendar.date(byAdding: .second, value: 86399, to: calendar.startOfDay(for: endBarWeekDay))!
                     
-                    let barChartWeekOfMonthFliterDatas = allDbDatas.filter { startBarWeekDay <= $0.purposeDate && endBarWeekDay >= $0.purposeDate }
+                    var barChartWeekOfMonthFliterDatas = allDbDatas.filter { startBarWeekDay <= $0.purposeDate && endBarWeekDay >= $0.purposeDate }
+                    
+                    // 1. 반복 데이터 필터링
+                    let lastWeekOfBarRepeatDatas = allDbDatas.filter {
+                        $0.purposeDate < startBarWeekDay &&
+                        $0.repeatState == true &&
+                        repeatWeekOfMonthDate(from: $0.purposeDate, startWeek: startBarWeekDay, endWeek: endBarWeekDay, calendar: calendar).map { $0 >= startBarWeekDay && $0 <= endBarWeekDay } ?? false
+                    }
+                  
+                    // 2. 매핑된 날짜로 새로운 데이터 생성 후 barChartWeekOfMonthFliterDatas에 추가
+                    barChartWeekOfMonthFliterDatas.append(contentsOf: appendWeekOfRepeatDatas(
+                        repeatDatas: lastWeekOfBarRepeatDatas,
+                        startWeek: startBarWeekDay,
+                        endWeek: endBarWeekDay,
+                        calendar: calendar
+                    ))
                     
                     let barChartWeekOfMonthOutMoney = barChartWeekOfMonthFliterDatas
                         .filter {$0.transactionType == "지출"}
@@ -668,7 +1015,7 @@ extension StatisticReactor {
                     let barDateFormatter = DateFormatter()
                     barDateFormatter.dateFormat = "MM.dd"
                     
-                    barChartDatas.append(BarChartInfo(month: "\(barDateFormatter.string(from: startBarWeekDay)) ~ \(barDateFormatter.string(from: endBarWeekDay))", spendMoney: barChartWeekOfMonthOutMoney))
+                    barChartDatas.append(BarChartInfo(month: "\(barDateFormatter.string(from: startBarWeekDay)) ~\n\(barDateFormatter.string(from: endBarWeekDay))", spendMoney: barChartWeekOfMonthOutMoney))
                 }
                 
                 // 원 그래프(카테고리 별 지출)
@@ -701,7 +1048,6 @@ extension StatisticReactor {
                     : ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
                     let money = data.transactionType == "수입" ? data.money : String(-Int(data.money)!)
                     let detailUse = data.purposeText
-                    let detailDate = data.purposeDate
                     
                     if inOutDatas[purposeDate] == nil {
                         inOutDatas[purposeDate] = [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
@@ -715,14 +1061,33 @@ extension StatisticReactor {
                 print("case 2: 월별")
                 let allDbDatas = self.currentState.dbDatas
                 
-                let monthFilterDatas = allDbDatas.filter {
+                var monthFilterDatas = allDbDatas.filter {
                     let filterYear = calendar.component(.year, from: $0.purposeDate)
                     let filterMonth = calendar.component(.month, from: $0.purposeDate)
-                    return filterYear == todayYear && filterMonth == todayMonth
+                    return filterYear == selectedDayYear && filterMonth == selectedDayMonth
                 }
                 
+                let yearMonthFormatter = DateFormatter()
+                yearMonthFormatter.dateFormat = "yyyy-MM"
+                yearMonthFormatter.locale = Locale(identifier: "ko_KR")
+                
+                // 매월 반복 데이터 추출
+                let repeatDatas: [HomeDataEntity] = allDbDatas.filter {
+                    let filterYear = calendar.component(.year, from: $0.purposeDate)
+                    let filterMonth = calendar.component(.month, from: $0.purposeDate)
+                    
+                    if let filterDate = yearMonthFormatter.date(from: "\(filterYear)-\(filterMonth)"),
+                       let selectedDate = yearMonthFormatter.date(from: "\(selectedDayYear)-\(selectedDayMonth)") {
+                        return selectedDate > filterDate && $0.repeatState == true
+                    } else {
+                        return false
+                    }
+                }.map { $0 }
+                
+                monthFilterDatas.append(contentsOf: appendMonthRepeatDatas(year: selectedDayYear, month: selectedDayMonth, repeatDatas: repeatDatas, calendar: calendar))
+                
                 // 날짜
-                dateText = "\(todayYear)년 \(todayMonth)월"
+                dateText = "\(selectedDayYear)년 \(selectedDayMonth)월"
                 
                 //총 지출
                 outComeMoneyText = String(monthFilterDatas
@@ -738,12 +1103,28 @@ extension StatisticReactor {
                 let lastDate = calendar.date(byAdding: .month, value: -1, to: selectedDate)!
                 let lastYear = calendar.component(.year, from: lastDate)
                 let lastMonth = calendar.component(.month, from: lastDate)
-                let lastMonthFliterDatas = allDbDatas.filter {
+                
+                var lastMonthFliterDatas = allDbDatas.filter {
                     let filterYear = calendar.component(.year, from: $0.purposeDate)
                     let filterMonth = calendar.component(.month, from: $0.purposeDate)
                     
                     return filterYear == lastYear && filterMonth == lastMonth
                 }
+                
+                // 매월 반복 데이터 추출
+                let lastRepeatDatas: [HomeDataEntity] = allDbDatas.filter {
+                    let filterYear = calendar.component(.year, from: $0.purposeDate)
+                    let filterMonth = calendar.component(.month, from: $0.purposeDate)
+                    
+                    if let filterDate = yearMonthFormatter.date(from: "\(filterYear)-\(filterMonth)"),
+                       let selectedDate = yearMonthFormatter.date(from: "\(lastYear)-\(lastMonth)") {
+                        return selectedDate > filterDate && $0.repeatState == true
+                    } else {
+                        return false
+                    }
+                }.map { $0 }
+                
+                lastMonthFliterDatas.append(contentsOf: appendMonthRepeatDatas(year: lastYear, month: lastMonth, repeatDatas: lastRepeatDatas, calendar: calendar))
                 
                 let thisMonthOutMoney = monthFilterDatas
                     .filter {$0.transactionType == "지출"}
@@ -767,11 +1148,26 @@ extension StatisticReactor {
                     let barChartYear = calendar.component(.year, from: barChartDate)
                     let barChartMonth = calendar.component(.month, from: barChartDate)
                     
-                    let barChartMonthFliterDatas = allDbDatas.filter {
+                    var barChartMonthFliterDatas = allDbDatas.filter {
                         let filterYear = calendar.component(.year, from: $0.purposeDate)
                         let filterMonth = calendar.component(.month, from: $0.purposeDate)
                         return filterYear == barChartYear && filterMonth == barChartMonth
                     }
+                    
+                    // 매월 반복 데이터 추출
+                    let repeatBarDatas: [HomeDataEntity] = allDbDatas.filter {
+                        let filterYear = calendar.component(.year, from: $0.purposeDate)
+                        let filterMonth = calendar.component(.month, from: $0.purposeDate)
+                        
+                        if let filterDate = yearMonthFormatter.date(from: "\(filterYear)-\(filterMonth)"),
+                           let selectedDate = yearMonthFormatter.date(from: "\(barChartYear)-\(barChartMonth)") {
+                            return selectedDate > filterDate && $0.repeatState == true
+                        } else {
+                            return false
+                        }
+                    }.map { $0 }
+                    
+                    barChartMonthFliterDatas.append(contentsOf: appendMonthRepeatDatas(year: barChartYear, month: barChartMonth, repeatDatas: repeatBarDatas, calendar: calendar))
                     
                     let barChartMonthOutMoney = barChartMonthFliterDatas
                         .filter {$0.transactionType == "지출"}
@@ -810,7 +1206,6 @@ extension StatisticReactor {
                     : ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.emoji ?? ""
                     let money = data.transactionType == "수입" ? data.money : String(-Int(data.money)!)
                     let detailUse = data.purposeText
-                    let detailDate = data.purposeDate
                     
                     if inOutDatas[purposeDate] == nil {
                         inOutDatas[purposeDate] = [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
@@ -864,4 +1259,114 @@ extension StatisticReactor {
         
         return newState
     }
+}
+
+// MARK: - 주별 관련 함수
+// 주 별, 반복 데이터를 현재 주간 날짜 범위에 맞게 계산하는 함수
+private func repeatWeekOfMonthDate(from originalDate: Date, startWeek: Date, endWeek: Date, calendar: Calendar) -> Date? {
+    let startMonth = calendar.component(.month, from: startWeek)
+    let endMonth = calendar.component(.month, from: endWeek)
+
+    let originalComponents = calendar.dateComponents([.day, .hour, .minute, .second], from: originalDate)
+    var mappedComponents = originalComponents
+
+    let isSameMonth = startMonth == endMonth
+    
+    // 시작 날짜와 끝나는 날짜의 달이 같을 때
+    if isSameMonth {
+        mappedComponents.year = calendar.component(.year, from: startWeek)
+        mappedComponents.month = startMonth
+
+        if let day = originalComponents.day,
+           let dayCount = calendar.range(of: .day, in: .month, for: originalDate)?.count,
+           day == dayCount {
+            // 말일이면 주간 시작 날짜 기준으로 말일 보정
+            mappedComponents.day = calendar.range(of: .day, in: .month, for: startWeek)?.count
+        }
+    } else {
+        // 한 주가 두 달에 걸친 경우
+        guard let day = originalComponents.day,
+              let dayCount = calendar.range(of: .day, in: .month, for: originalDate)?.count else {
+            return nil
+        }
+
+        if day >= 10 {
+            mappedComponents.year = calendar.component(.year, from: startWeek)
+            mappedComponents.month = startMonth
+            // 말일이면 주간 시작 날짜 기준으로 말일 보정
+            if day == dayCount {
+                mappedComponents.day = calendar.range(of: .day, in: .month, for: startWeek)?.count
+            }
+        } else {
+            mappedComponents.year = calendar.component(.year, from: endWeek)
+            mappedComponents.month = endMonth
+        }
+    }
+
+    return calendar.date(from: mappedComponents)
+}
+
+// 매핑된 날짜로 새로운 데이터 생성 후 추가
+private func appendWeekOfRepeatDatas(repeatDatas: [HomeDataEntity], startWeek: Date, endWeek: Date, calendar: Calendar,) -> [HomeDataEntity] {
+    
+    var adjustedDatas: [HomeDataEntity] = []
+    
+    for data in repeatDatas {
+        if let adjustedDate = repeatWeekOfMonthDate(from: data.purposeDate, startWeek: startWeek, endWeek: endWeek, calendar: calendar) {
+            let adjustedData = HomeDataEntity(
+                _id: data._id,
+                transactionType: data.transactionType,
+                money: data.money,
+                purposeText: data.purposeText,
+                purposeDate: adjustedDate,
+                repeatState: data.repeatState,
+                expenseKind: data.expenseKind,
+                selectedCategoryIndex: data.selectedCategoryIndex,
+                memoText: data.memoText
+            )
+            
+            adjustedDatas.append(adjustedData)
+        }
+    }
+    
+    return adjustedDatas
+}
+
+// MARK: - 월별
+// 매핑된 날짜로 새로운 데이터 생성 후 추가
+private func appendMonthRepeatDatas(year: Int, month: Int, repeatDatas: [HomeDataEntity], calendar: Calendar) -> [HomeDataEntity] {
+    let yearMonthFormatter = DateFormatter()
+    yearMonthFormatter.dateFormat = "yyyy-MM"
+    yearMonthFormatter.locale = Locale(identifier: "ko_KR")
+    
+    var adjustedDatas: [HomeDataEntity] = []
+    
+    if let repeatDate = yearMonthFormatter.date(from: "\(year)-\(month)") {
+        for data in repeatDatas {
+            // 반복되는 일(day)값을 이용하여 선택한 달의 해당하는 날 구하기
+            let fromComponents = calendar.dateComponents([.year, .month], from: repeatDate)
+            let toComponents = calendar.dateComponents([.year, .month], from: data.purposeDate)
+            
+            var changedPurposeDate = data.purposeDate
+            
+            if let fromYear = fromComponents.year,
+               let fromMonth = fromComponents.month,
+               let toYear = toComponents.year,
+               let toMonth = toComponents.month {
+
+                let fromTotalMonths = fromYear * 12 + fromMonth
+                let toTotalMonths = toYear * 12 + toMonth
+                // 월 차이 구하기
+                let monthDiff = fromTotalMonths - toTotalMonths
+                // 선택한 달의 날로 날짜 변경
+                changedPurposeDate = calendar.date(byAdding: .month, value: monthDiff, to: data.purposeDate) ?? data.purposeDate
+            }
+            
+            let changedData = HomeDataEntity(_id: data._id, transactionType: data.transactionType, money: data.money, purposeText: data.purposeText, purposeDate: changedPurposeDate, repeatState: data.repeatState, expenseKind: data.expenseKind, selectedCategoryIndex: data.selectedCategoryIndex, memoText: data.memoText)
+            
+            adjustedDatas.append(changedData)
+        }
+    }
+    
+    return adjustedDatas
 }

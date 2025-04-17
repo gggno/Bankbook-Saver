@@ -81,7 +81,8 @@ class LocalNotiManager {
         
         // 1. 알림 내용 작성
         let notificationContent = UNMutableNotificationContent()
-        notificationContent.title = "내일은 \(purposeText) 결제 예정일 입니다."
+        notificationContent.title = "텅장 세이버"
+        notificationContent.body = "내일은 \(purposeText) 결제 예정일 입니다."
         notificationContent.sound = .default
         
         
@@ -123,7 +124,8 @@ class LocalNotiManager {
         
         // 1. 알림 내용 작성
         let notificationContent = UNMutableNotificationContent()
-        notificationContent.title = "내일은 \(purposeText)이 들어올 예정입니다."
+        notificationContent.title = "텅장 세이버"
+        notificationContent.body = "내일은 \(purposeText)이 들어올 예정입니다."
         notificationContent.sound = .default
         
         
