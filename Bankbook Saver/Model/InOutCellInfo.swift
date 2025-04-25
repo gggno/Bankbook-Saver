@@ -13,4 +13,5 @@ struct InOutCellInfo: Equatable {
     let emoji: String
     let money: String
     let detailUse: String
+    let category: String
 }

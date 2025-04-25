@@ -11,13 +11,13 @@ import SnapKit
 class PayDayView: UIView {
     lazy var payDayLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 16)
+        label.font = .systemFont(ofSize: 15, weight: .semibold)
         return label
     }()
     
     lazy var dateLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 16)
+        label.font = .systemFont(ofSize: 15)
 
         return label
     }()

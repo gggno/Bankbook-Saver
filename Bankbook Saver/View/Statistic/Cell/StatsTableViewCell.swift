@@ -42,42 +42,100 @@ class StatsTableViewCell: UITableViewCell {
         return button
     }()
     
+    lazy var inComeImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "arrow.up.forward")
+        imageView.tintColor = .blue
+        return imageView
+    }()
+    
+    lazy var inComeImageBackgroundView: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.inComeBg
+        view.layer.cornerRadius = 15
+        view.clipsToBounds = true
+        
+        view.addSubview(inComeImageView)
+        
+        return view
+    }()
+    
+    lazy var inComeLabel: UILabel = {
+        let label = UILabel()
+        label.text = "수입"
+        label.textColor = .systemGray
+        label.font = .systemFont(ofSize: 14, weight: .medium)
+        
+        return label
+    }()
     
     lazy var inComeMoneyLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 18, weight: .medium)
+        label.font = .systemFont(ofSize: 17, weight: .semibold)
         return label
     }()
     
-    lazy var inComeTextLabel: UILabel = {
+    lazy var inComeView: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.inComeBg.withAlphaComponent(0.3)
+        view.layer.cornerRadius = 10
+        view.addSubview(inComeImageBackgroundView)
+        view.addSubview(inComeLabel)
+        view.addSubview(inComeMoneyLabel)
+        
+        return view
+    }()
+    
+    lazy var outComeImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "arrow.down.forward")
+        imageView.tintColor = .red
+        return imageView
+    }()
+    
+    lazy var outComeImageBackgroundView: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.outComeBg
+        view.layer.cornerRadius = 15
+        view.clipsToBounds = true
+        
+        view.addSubview(outComeImageView)
+        
+        return view
+    }()
+    
+    lazy var outComeLabel: UILabel = {
         let label = UILabel()
-        label.text = "총 수입"
+        label.text = "지출"
+        label.textColor = .systemGray
+        label.font = .systemFont(ofSize: 14, weight: .medium)
+        
         return label
     }()
     
-    lazy var inComeStackView: UIStackView = {
-        let stackView = UIStackView()
+    lazy var outComeMoneyLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 17, weight: .semibold)
+        return label
+    }()
+    
+    lazy var outComeView: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.outComeBg.withAlphaComponent(0.3)
+        view.layer.cornerRadius = 10
+        view.addSubview(outComeImageBackgroundView)
+        view.addSubview(outComeLabel)
+        view.addSubview(outComeMoneyLabel)
+        
+        return view
+    }()
+    
+    lazy var moneyStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [inComeView, outComeView])
         stackView.axis = .horizontal
-        stackView.distribution = .equalSpacing
-        return stackView
-    }()
-    
-    lazy var withdrawMoneyLabel: UILabel = {
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 18, weight: .medium)
-        return label
-    }()
-    
-    lazy var withdrawTextLabel: UILabel = {
-        let label = UILabel()
-        label.text = "총 지출"
-        return label
-    }()
-    
-    lazy var withdrawStackView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.axis = .horizontal
-        stackView.distribution = .equalSpacing
+        stackView.spacing = 20
+        stackView.distribution = .fillEqually
+        
         return stackView
     }()
     
@@ -113,13 +171,7 @@ class StatsTableViewCell: UITableViewCell {
         self.contentView.addSubview(leftMoveButton)
         self.contentView.addSubview(rightMoveButton)
         
-        inComeStackView.addArrangedSubview(inComeTextLabel)
-        inComeStackView.addArrangedSubview(inComeMoneyLabel)
-        self.contentView.addSubview(inComeStackView)
-        
-        withdrawStackView.addArrangedSubview(withdrawTextLabel)
-        withdrawStackView.addArrangedSubview(withdrawMoneyLabel)
-        self.contentView.addSubview(withdrawStackView)
+        self.contentView.addSubview(moneyStackView)
     }
     
     func setLayout() {
@@ -140,18 +192,55 @@ class StatsTableViewCell: UITableViewCell {
             make.trailing.equalTo(self.contentView).offset(-20)
         }
         
-        inComeStackView.snp.makeConstraints { make in
-            make.centerX.equalTo(self.contentView)
-            make.top.equalTo(dateLabel.snp.bottom).offset(25)
-            make.leading.equalTo(self.contentView).offset(20)
+        // inCome 컴포넌트들
+        inComeImageView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
         }
         
-        withdrawStackView.snp.makeConstraints { make in
-            make.centerX.equalTo(self.contentView)
-            make.top.equalTo(inComeStackView.snp.bottom).offset(10)
-            make.leading.equalTo(self.contentView).offset(20)
-            make.bottom.equalTo(self.contentView.snp.bottom).offset(-20)
+        inComeImageBackgroundView.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(10)
+            make.leading.equalToSuperview().offset(10)
+            make.size.equalTo(30)
+        }
+        
+        inComeLabel.snp.makeConstraints { make in
+            make.centerY.equalTo(inComeImageBackgroundView.snp.centerY)
+            make.leading.equalTo(inComeImageBackgroundView.snp.trailing).offset(10)
+        }
+        
+        inComeMoneyLabel.snp.makeConstraints { make in
+            make.top.equalTo(inComeImageBackgroundView.snp.bottom).offset(10)
+            make.leading.equalToSuperview().offset(10)
+            make.bottom.equalToSuperview().offset(-10)
+        }
+        
+        // outCome 컴포넌트들
+        outComeImageView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+        }
+        
+        outComeImageBackgroundView.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(10)
+            make.leading.equalToSuperview().offset(10)
+            make.size.equalTo(30)
+        }
+        
+        outComeLabel.snp.makeConstraints { make in
+            make.centerY.equalTo(outComeImageBackgroundView.snp.centerY)
+            make.leading.equalTo(outComeImageBackgroundView.snp.trailing).offset(10)
+        }
+        
+        outComeMoneyLabel.snp.makeConstraints { make in
+            make.top.equalTo(outComeImageBackgroundView.snp.bottom).offset(10)
+            make.leading.equalToSuperview().offset(10)
+            make.bottom.equalToSuperview().offset(-10)
+        }
+        
+        // 스택뷰에 inCome, outCome 넣기
+        moneyStackView.snp.makeConstraints { make in
+            make.top.equalTo(dateLabel.snp.bottom).offset(20)
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.bottom.equalToSuperview().inset(20)
         }
     }
-
 }

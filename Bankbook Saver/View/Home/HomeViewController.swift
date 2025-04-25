@@ -242,8 +242,6 @@ extension HomeViewController: UITableViewDataSource {
             return cell
             
         case .homeInOutList:
-            //            let cell = tableView.dequeueReusableCell(withIdentifier: "SelectedInOutTableViewCell", for: indexPath) as! SelectedInOutTableViewCell
-            //            return cell
             let cell = tableView.dequeueReusableCell(withIdentifier: "InOutListTableViewCell", for: indexPath) as! InOutListTableViewCell
             
             cell.selectionStyle = .none
@@ -256,13 +254,17 @@ extension HomeViewController: UITableViewDataSource {
                 let key = headers[indexPath.section - 1]
                 if let inOutCell = reactor?.currentState.inOutData[key] {
                     cell.emojiLabel.text = inOutCell[indexPath.row].emoji
+                    cell.detailUseLabel.text = inOutCell[indexPath.row].detailUse
+                    cell.categoryLabel.text = inOutCell[indexPath.row].category
                     cell.moneyLabel.text = (Int(inOutCell[indexPath.row].money)?.withComma ?? "0") + "원"
+                    
                     if Int(inOutCell[indexPath.row].money)! >= 0 {
                         cell.moneyLabel.textColor = .systemBlue
+                        cell.emojiLabel.backgroundColor = UIColor.inComeBg
                     } else {
                         cell.moneyLabel.textColor = .systemRed
+                        cell.emojiLabel.backgroundColor = UIColor.outComeBg
                     }
-                    cell.detailUseLabel.text = inOutCell[indexPath.row].detailUse
                 }
             }
             
@@ -287,10 +289,10 @@ extension HomeViewController: UITableViewDataSource {
                 if let inOutCell = reactor?.currentState.inOutData[key],
                    let thisMonthDatas = reactor?.currentState.thisMonthDatas,
                    let selectedIndex = thisMonthDatas.firstIndex(where: { $0._id.stringValue == inOutCell[indexPath.row].id }) {
-                    print("THIS: \(thisMonthDatas)")
+                    
                     let addVC = AddTransactionViewController()
                     addVC.title = "거래 내역 수정하기"
-                    print("transactionId: \(thisMonthDatas[selectedIndex]._id.stringValue)")
+                    
                     addVC.transactionId = thisMonthDatas[selectedIndex]._id.stringValue
                     
                     if thisMonthDatas[selectedIndex].transactionType == "지출" {

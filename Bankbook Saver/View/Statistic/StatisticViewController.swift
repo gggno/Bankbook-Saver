@@ -69,7 +69,7 @@ extension StatisticViewController {
             .distinctUntilChanged()
             .subscribe { index in
                 self.segmentControl.selectedSegmentIndex = index
-            reactor.action.onNext(.updateSegmentIndexAction(index))
+                reactor.action.onNext(.updateSegmentIndexAction(segmentIndex: index))
         }
         .disposed(by: disposeBag)
         
@@ -89,7 +89,7 @@ extension StatisticViewController {
             .distinctUntilChanged { $0 == $1 }
             .observe(on: MainScheduler.asyncInstance)   // 새로운 이벤트가 발생하기 전에 현재 이벤트 처리가 끝날 때까지 기다려줌
             .subscribe(onNext: { _ in
-                reactor.action.onNext(.updateSegmentIndexAction(self.segmentControl.selectedSegmentIndex))
+                reactor.action.onNext(.updateSegmentIndexAction(segmentIndex: self.segmentControl.selectedSegmentIndex))
             })
             .disposed(by: disposeBag)
         
@@ -100,14 +100,14 @@ extension StatisticViewController {
                 cell.leftButtonTapped
                     .subscribe(onNext: {
                         print("왼쪽 버튼 탭")
-                        reactor.action.onNext(.moveToDateAction(reactor.currentState.selectedDateCount - 1))
+                        reactor.action.onNext(.moveToDateAction(selectedDateCount: reactor.currentState.selectedDateCount - 1))
                     })
                     .disposed(by: cell.disposeBag)
                 
                 cell.rightButtonTapped
                     .subscribe(onNext: {
                         print("오른쪽 버튼 탭")
-                        reactor.action.onNext(.moveToDateAction(reactor.currentState.selectedDateCount + 1))
+                        reactor.action.onNext(.moveToDateAction(selectedDateCount: reactor.currentState.selectedDateCount + 1))
                     })
                     .disposed(by: cell.disposeBag)
             }
@@ -204,7 +204,7 @@ extension StatisticViewController: UITableViewDataSource {
             cell.selectionStyle = .none
 
             cell.dateLabel.text = reactor?.currentState.dateText ?? ""
-            cell.withdrawMoneyLabel.text = (Int(reactor?.currentState.outComeMoneyText ?? "0")?.withComma ?? "0") + "원"
+            cell.outComeMoneyLabel.text = (Int(reactor?.currentState.outComeMoneyText ?? "0")?.withComma ?? "0") + "원"
             cell.inComeMoneyLabel.text = (Int(reactor?.currentState.inComeMoneyText ?? "0")?.withComma ?? "0") + "원"
             
             return cell
@@ -214,7 +214,7 @@ extension StatisticViewController: UITableViewDataSource {
             
             cell.selectionStyle = .none
 
-            cell.previousSpendLabel.text = reactor?.currentState.lastSixMonthText ?? ""
+            cell.previousSpendLabel.text = reactor?.currentState.lastCompareText ?? ""
             cell.barChartDatas = reactor?.currentState.barChartDatas ?? []
 
             return cell
@@ -241,13 +241,17 @@ extension StatisticViewController: UITableViewDataSource {
                 let key = headers[indexPath.section - 3]
                 if let inOutCell = reactor?.currentState.inOutDatas[key] {
                     cell.emojiLabel.text = inOutCell[indexPath.row].emoji
+                    cell.detailUseLabel.text = inOutCell[indexPath.row].detailUse
+                    cell.categoryLabel.text = inOutCell[indexPath.row].category
                     cell.moneyLabel.text = (Int(inOutCell[indexPath.row].money)?.withComma ?? "0") + "원"
+                    
                     if Int(inOutCell[indexPath.row].money)! >= 0 {
                         cell.moneyLabel.textColor = .systemBlue
+                        cell.emojiLabel.backgroundColor = UIColor.inComeBg
                     } else {
                         cell.moneyLabel.textColor = .systemRed
+                        cell.emojiLabel.backgroundColor = UIColor.outComeBg
                     }
-                    cell.detailUseLabel.text = inOutCell[indexPath.row].detailUse
                 }
             }
             

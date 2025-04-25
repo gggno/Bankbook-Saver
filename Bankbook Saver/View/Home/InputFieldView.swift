@@ -12,7 +12,7 @@ class InputFieldView: UIView, UITextFieldDelegate {
     
     lazy var titleLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 15)
+        label.font = .systemFont(ofSize: 15, weight: .semibold)
         return label
     }()
     
@@ -42,7 +42,7 @@ class InputFieldView: UIView, UITextFieldDelegate {
     
     lazy var underlineView: UIView = {
         let view = UIView()
-        view.backgroundColor = .label
+        view.backgroundColor = .systemGray
         return view
     }()
     

@@ -23,6 +23,7 @@ class BarChartTableViewCell: UITableViewCell {
     
     lazy var previousSpendLabel: UILabel = {
         let label = UILabel()
+        label.font = .systemFont(ofSize: 17, weight: .semibold)
         return label
     }()
     

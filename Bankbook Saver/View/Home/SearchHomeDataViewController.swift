@@ -191,13 +191,17 @@ extension SearchHomeDataViewController: UITableViewDataSource {
             
             if let inOutCell = reactor?.currentState.inOutDatas[key] {
                 cell.emojiLabel.text = inOutCell[indexPath.row].emoji
+                cell.detailUseLabel.text = inOutCell[indexPath.row].detailUse
+                cell.categoryLabel.text = inOutCell[indexPath.row].category
                 cell.moneyLabel.text = (Int(inOutCell[indexPath.row].money)?.withComma ?? "0") + "원"
+                
                 if Int(inOutCell[indexPath.row].money)! >= 0 {
                     cell.moneyLabel.textColor = .systemBlue
+                    cell.emojiLabel.backgroundColor = UIColor.inComeBg
                 } else {
                     cell.moneyLabel.textColor = .systemRed
+                    cell.emojiLabel.backgroundColor = UIColor.outComeBg
                 }
-                cell.detailUseLabel.text = inOutCell[indexPath.row].detailUse
             }
         }
          

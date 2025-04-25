@@ -18,6 +18,8 @@ class AddTransactionViewController: UIViewController {
     lazy var segmentControl: UISegmentedControl = {
         let segmentControl = UISegmentedControl(items: ["지출", "수입"])
         segmentControl.selectedSegmentIndex = 0
+        segmentControl.selectedSegmentTintColor = .outComeBg.withAlphaComponent(0.6)
+        
         return segmentControl
     }()
     
@@ -69,19 +71,22 @@ class AddTransactionViewController: UIViewController {
             self.inComeView.isHidden = true
             addTransScrollView.isScrollEnabled = true
             addTransScrollView.showsVerticalScrollIndicator = true
+            segment.selectedSegmentTintColor = .outComeBg.withAlphaComponent(0.6)
             
         case 1: // 수입
             self.expenseView.isHidden = true
             self.inComeView.isHidden = false
             addTransScrollView.isScrollEnabled = false
             addTransScrollView.showsVerticalScrollIndicator = false
-            
+            segment.selectedSegmentTintColor = .inComeBg.withAlphaComponent(0.6)
+        
         default:
             self.expenseView.isHidden = false
             self.inComeView.isHidden = true
             addTransScrollView.isScrollEnabled = true
             addTransScrollView.showsVerticalScrollIndicator = true
-
+            segment.selectedSegmentTintColor = .outComeBg.withAlphaComponent(0.6)
+            
         }
     }
     
@@ -385,7 +390,7 @@ extension AddTransactionViewController: View {
         }
         .subscribe(onNext: { isValid in
             self.expenseView.confirmButton.isEnabled = isValid
-            self.expenseView.confirmButton.backgroundColor = isValid ? .systemBlue : .gray
+            self.expenseView.confirmButton.backgroundColor = isValid ? .label : .gray
         })
         .disposed(by: disposeBag)
         
@@ -397,7 +402,7 @@ extension AddTransactionViewController: View {
         }
         .subscribe(onNext: { isValid in
             self.inComeView.confirmButton.isEnabled = isValid
-            self.inComeView.confirmButton.backgroundColor = isValid ? .systemBlue : .gray
+            self.inComeView.confirmButton.backgroundColor = isValid ? .label : .gray
         })
         .disposed(by: disposeBag)
     }

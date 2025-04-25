@@ -18,17 +18,17 @@ class ExpenseView: UIView {
     let selectedCategoryIndex = BehaviorSubject<Int>(value: 0)
      
     lazy var moneyInputFieldView: InputFieldView = {
-        let view = InputFieldView(title: "금액을 입력하세요", placeholder: "금액을 입력하세요", keyboardType: .numberPad, unitText: "원")
+        let view = InputFieldView(title: "금액", placeholder: "금액을 입력하세요", keyboardType: .numberPad, unitText: "원")
         return view
     }()
     
     lazy var expensePurposeInputFieldView: InputFieldView = {
-        let view = InputFieldView(title: "지출처를 입력하세요", placeholder: "지출처를 입력하세요")
+        let view = InputFieldView(title: "내용", placeholder: "거래 내용을 입력하세요")
         return view
     }()
     
     lazy var payDayView: PayDayView = {
-        let view = PayDayView(payTypeText: "지출일시", dateText: "2월 5일 16:39")
+        let view = PayDayView(payTypeText: "날짜", dateText: "2월 5일 16:39")
         
         view.isUserInteractionEnabled = true
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(payDayViewTap(_:)))
@@ -64,7 +64,8 @@ class ExpenseView: UIView {
     
     lazy var repeatStateLabel: UILabel = {
         let label = UILabel()
-        label.text = "매월 지출로 등록"
+        label.text = "매월 반복"
+        label.font = .systemFont(ofSize: 15, weight: .semibold)
         return label
     }()
     
@@ -102,7 +103,7 @@ class ExpenseView: UIView {
     lazy var memoLabel: UILabel = {
         let label = UILabel()
         label.text = "메모"
-        label.font = .systemFont(ofSize: 15)
+        label.font = .systemFont(ofSize: 15, weight: .semibold)
         return label
     }()
     
@@ -124,15 +125,15 @@ class ExpenseView: UIView {
     
     lazy var memoUnderlineView: UIView = {
         let view = UIView()
-        view.backgroundColor = .label
+        view.backgroundColor = .systemGray
         return view
     }()
     
     lazy var confirmButton: UIButton = {
         let button = UIButton()
         button.setTitle("확인", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = .systemBlue
+        button.setTitleColor(.systemBackground, for: .normal)
+        button.layer.cornerRadius = 10
         return button
     }()
     

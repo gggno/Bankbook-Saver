@@ -33,7 +33,8 @@ class LocalNotiManager {
         
         // 1. 알림 내용 작성
         let notificationContent = UNMutableNotificationContent()
-        notificationContent.title = "오늘 하루의 소비 내역을 작성해보세요! 😁"
+        notificationContent.title = "텅장 세이버"
+        notificationContent.body = "오늘 하루의 소비 내역을 작성해보세요! 😁"
         notificationContent.sound = .default
         
         var dateComponents = DateComponents()

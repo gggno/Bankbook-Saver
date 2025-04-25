@@ -148,11 +148,14 @@ extension HomeReactor {
                 
                 let money = data.transactionType == "수입" ? data.money : "-\(data.money)"
                 let detailUse = data.purposeText
+                let category = data.transactionType == "수입"
+                ? InComeCategoryType(rawValue: data.selectedCategoryIndex)?.title ?? ""
+                : ExposeCategoryType(rawValue: data.selectedCategoryIndex)?.title ?? ""
                 
                 if filterInOutDatas[purposeDate] == nil {
-                    filterInOutDatas[purposeDate] = [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
+                    filterInOutDatas[purposeDate] = [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse, category: category)]
                 } else {
-                    filterInOutDatas[purposeDate]! += [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse)]
+                    filterInOutDatas[purposeDate]! += [InOutCellInfo(id: data._id.stringValue, transactionType: data.transactionType, emoji: emoji, money: money, detailUse: detailUse, category: category)]
                 }
             }
             

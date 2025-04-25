@@ -33,4 +33,18 @@ class HomeDataEntity: Object {
         self.selectedCategoryIndex = selectedCategoryIndex
         self.memoText = memoText
     }
+    
+    convenience init(homeData: HomeDataEntity, changedDate: Date) {
+        self.init()
+        
+        self._id = homeData._id
+        self.transactionType = homeData.transactionType
+        self.money = homeData.money
+        self.purposeText = homeData.purposeText
+        self.purposeDate = changedDate
+        self.repeatState = homeData.repeatState
+        self.expenseKind = homeData.expenseKind
+        self.selectedCategoryIndex = homeData.selectedCategoryIndex
+        self.memoText = homeData.memoText
+    }
 }
